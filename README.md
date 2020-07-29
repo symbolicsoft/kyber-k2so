@@ -28,9 +28,17 @@ go get -u github.com/symbolicsoft/kyber-k2so
 ```
 
 ```go
-privateKeyB, publicKeyB, _ := KemKeypair()
-ciphertextA, sharedSecretA, _ := KemEncrypt(publicKeyB)
-sharedSecretB, _ := KemDecrypt(ciphertextA, privateKeyB)
+package main
+
+import (
+	"github.com/symbolicsoft/kyber-k2so/cmd/kyberk2so"
+)
+
+func main() {
+	privateKey, publicKey, _ := kyberk2so.KemKeypair()
+	ciphertext, ssA, _ := kyberk2so.KemEncrypt(publicKey)
+	ssB, _ := kyberk2so.KemDecrypt(ciphertext, privateKey)
+}
 ```
 
 Yes, it's that simple!
