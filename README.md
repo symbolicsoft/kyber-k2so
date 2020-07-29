@@ -24,7 +24,7 @@ Keeping in mind the Security Disclaimer above, Kyber-K2SO appears to be appropri
 
 ## Using Kyber-K2SO
 ```bash
-go get -u github.com/symbolicsoft/kyber-k2so
+go get -u github.com/symbolicsoft/kyber-k2so/cmd/kyberk2so
 ```
 
 ```go
