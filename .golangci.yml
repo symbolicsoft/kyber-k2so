@@ -1,0 +1,97 @@
+run:
+    skip-files:
+        - main_test.go
+        - help.go
+        - libpeg.go
+        - libcoq.go
+
+linters:
+    enable:
+        - govet
+        - staticcheck
+        - gosimple
+        - gofmt
+        - structcheck
+        - varcheck
+        - ineffassign
+        - typecheck
+        - depguard
+        - dogsled
+        - dupl
+        - funlen
+        - gochecknoinits
+        - godox
+        - gocritic
+        - gocyclo
+        - gosec
+        - lll
+        - misspell
+        - nakedret
+        - prealloc
+        - scopelint
+        - unconvert
+        - unparam
+        - unused
+        - deadcode
+        - errcheck
+
+linters-settings:
+    gocritic:
+        enabled-checks:
+            - appendAssign
+            - caseOrder
+            - dupArg
+            - dupBranchBody
+            - dupCase
+            - dupSubExpr
+            - flagDeref
+            - captLocal
+            - defaultCaseOrder
+            - elseif
+            - ifElseChain
+            - regexpMust
+            - sloppyLen
+            - switchTrue
+            - typeSwitchVar
+            - underef
+            - unlambda
+            - unslice
+            - argOrder
+            - badCall
+            - badCond
+            - evalOrder
+            - exitAfterDefer
+            - flagName
+            - mapKey
+            - nilValReturn
+            - octalLiteral
+            - offBy1
+            - regexpPattern
+            - sloppyReassign
+            - truncateCmp
+            - weakCond
+            - boolExprSimplify
+            - builtinShadow
+            - dupImport
+            - methodExprCall
+            - initClause
+            - newDeref
+            - nestingReduce
+            - stringXbytes
+            - unlabelStmt
+            - typeUnparen
+            - unnecessaryBlock
+            - valSwap
+            - wrapperFunc
+            - yodaStyleExpr
+    goconst:
+        min-len: 12
+    funlen:
+        statements: 64
+        lines: 128
+    gocyclo:
+        min-complexity: 15
+    govet:
+        enable-all: true
+    lll:
+        line-length: 120

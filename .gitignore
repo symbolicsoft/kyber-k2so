@@ -1,0 +1,51 @@
+# SPDX-FileCopyrightText: © 2020-2021 Nadim Kobeissi <nadim@symbolic.software>
+# SPDX-License-Identifier: CC0-1.0
+
+# Verifpal
+cmd/kyber-r2d2/resource.syso
+build/kyber-r2d2.*
+dist
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.upx
+*.test
+
+# macOS
+.DS_Store
+
+# Visual Studio Code
+.vscode
+
+# Snapcraft
+snapcraft.login
+
+# Coq
+*.glob
+*.vo
+*.vok
+*.vos
+*.aux
+
+# Scripts
+scripts
+
+# C
+*.so
+*.o
+test_kex1024
+test_kex512
+test_kex768
+test_kyber1024
+test_kyber512
+test_kyber768
+test_speed1024
+test_speed512
+test_speed768
+test_vectors1024
+test_vectors512
+test_vectors768
