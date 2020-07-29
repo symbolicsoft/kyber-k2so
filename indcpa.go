@@ -14,8 +14,8 @@ func indcpaPackPublicKey(publicKey polyvec, seed []byte) []byte {
 }
 
 func indcpaUnpackPublicKey(packedPublicKey []byte) (polyvec, []byte) {
-	publicKeyPolyvec := polyvecFromBytes(packedPublicKey[:params.polyvecbytes])
-	seed := packedPublicKey[params.polyvecbytes:]
+	publicKeyPolyvec := polyvecFromBytes(packedPublicKey[:paramsPolyvecBytes])
+	seed := packedPublicKey[paramsPolyvecBytes:]
 	return publicKeyPolyvec, seed
 }
 
@@ -32,8 +32,8 @@ func indcpaPackCiphertext(b polyvec, v poly) []byte {
 }
 
 func indcpaUnpackCiphertext(c []byte) (polyvec, poly) {
-	b := polyvecDecompress(c[:params.polyveccompressedbytes])
-	v := polyDecompress(c[params.polyveccompressedbytes:])
+	b := polyvecDecompress(c[:paramsPolyvecCompressedBytes])
+	v := polyDecompress(c[paramsPolyvecCompressedBytes:])
 	return b, v
 }
 
@@ -45,8 +45,8 @@ func indcpaRejUniform(l int, buf []byte, bufl int) ([]int16, int) {
 	for ctr < l && pos+2 <= bufl {
 		val = uint16(buf[pos]) | (uint16(buf[pos+1]) << 8)
 		pos = pos + 2
-		if val < uint16(19*params.q) {
-			val = val - ((val >> 12) * uint16(params.q))
+		if val < uint16(19*paramsQ) {
+			val = val - ((val >> 12) * uint16(paramsQ))
 			r[ctr] = int16(val)
 			ctr = ctr + 1
 		}
@@ -55,13 +55,13 @@ func indcpaRejUniform(l int, buf []byte, bufl int) ([]int16, int) {
 }
 
 func indcpaGenMatrix(seed []byte, transposed bool) ([]polyvec, error) {
-	r := make([]polyvec, params.k)
+	r := make([]polyvec, paramsK)
 	buf := make([]byte, 4*168)
 	xof := sha3.NewShake128()
 	ctr := 0
-	for i := 0; i < params.k; i++ {
+	for i := 0; i < paramsK; i++ {
 		r[i] = polyvecNew()
-		for j := 0; j < params.k; j++ {
+		for j := 0; j < paramsK; j++ {
 			transposon := []byte{byte(j), byte(i)}
 			if transposed {
 				transposon = []byte{byte(i), byte(j)}
@@ -75,17 +75,17 @@ func indcpaGenMatrix(seed []byte, transposed bool) ([]polyvec, error) {
 			if err != nil {
 				return []polyvec{}, err
 			}
-			r[i].vec[j].coeffs, ctr = indcpaRejUniform(params.n, buf, len(buf))
-			for ctr < params.n {
+			r[i].vec[j].coeffs, ctr = indcpaRejUniform(paramsN, buf, len(buf))
+			for ctr < paramsN {
 				bufn := make([]byte, 168)
 				_, err = xof.Read(bufn)
 				if err != nil {
 					return []polyvec{}, err
 				}
-				missing, ctrn := indcpaRejUniform(params.n-ctr, bufn, 168)
+				missing, ctrn := indcpaRejUniform(paramsN-ctr, bufn, 168)
 				r[i].vec[j].coeffs = append(
 					r[i].vec[j].coeffs[:ctr],
-					missing[:params.n-ctr]...,
+					missing[:paramsN-ctr]...,
 				)
 				ctr = ctr + ctrn
 			}
@@ -104,35 +104,35 @@ func indcpaKeypair() ([]byte, []byte, error) {
 	skpv := polyvecNew()
 	pkpv := polyvecNew()
 	e := polyvecNew()
-	buf := make([]byte, 2*params.symbytes)
+	buf := make([]byte, 2*paramsSymBytes)
 	h := sha3.New512()
-	_, err := rand.Read(buf[:params.symbytes])
+	_, err := rand.Read(buf[:paramsSymBytes])
 	if err != nil {
 		return []byte{}, []byte{}, err
 	}
-	_, err = h.Write(buf[:params.symbytes])
+	_, err = h.Write(buf[:paramsSymBytes])
 	if err != nil {
 		return []byte{}, []byte{}, err
 	}
 	buf = buf[:0]
 	buf = h.Sum(buf)
-	publicSeed, noiseSeed := buf[:params.symbytes], buf[params.symbytes:]
+	publicSeed, noiseSeed := buf[:paramsSymBytes], buf[paramsSymBytes:]
 	a, err := indcpaGenMatrix(publicSeed, false)
 	if err != nil {
 		return []byte{}, []byte{}, err
 	}
 	var nonce byte
-	for i := 0; i < params.k; i++ {
+	for i := 0; i < paramsK; i++ {
 		skpv.vec[i] = polyGetNoise(noiseSeed, nonce)
 		nonce = nonce + 1
 	}
-	for i := 0; i < params.k; i++ {
+	for i := 0; i < paramsK; i++ {
 		e.vec[i] = polyGetNoise(noiseSeed, nonce)
 		nonce = nonce + 1
 	}
 	skpv = polyvecNtt(skpv)
 	e = polyvecNtt(e)
-	for i := 0; i < params.k; i++ {
+	for i := 0; i < paramsK; i++ {
 		pkpv.vec[i] = polyvecPointWiseAccMontgomery(a[i], skpv)
 		pkpv.vec[i] = polyToMont(pkpv.vec[i])
 	}
@@ -148,21 +148,21 @@ func indcpaEncrypt(m []byte, publicKey []byte, coins []byte) ([]byte, error) {
 	nonce := byte(0)
 	publicKeyPolyvec, seed := indcpaUnpackPublicKey(publicKey)
 	k := polyFromMsg(m)
-	at, err := indcpaGenMatrix(seed[:params.symbytes], true)
+	at, err := indcpaGenMatrix(seed[:paramsSymBytes], true)
 	if err != nil {
 		return []byte{}, err
 	}
-	for i := 0; i < params.k; i++ {
+	for i := 0; i < paramsK; i++ {
 		sp.vec[i] = polyGetNoise(coins, nonce)
 		nonce = nonce + 1
 	}
-	for i := 0; i < params.k; i++ {
+	for i := 0; i < paramsK; i++ {
 		ep.vec[i] = polyGetNoise(coins, nonce)
 		nonce = nonce + 1
 	}
 	epp := polyGetNoise(coins, nonce)
 	sp = polyvecNtt(sp)
-	for i := 0; i < params.k; i++ {
+	for i := 0; i < paramsK; i++ {
 		bp.vec[i] = polyvecPointWiseAccMontgomery(at[i], sp)
 	}
 	v := polyvecPointWiseAccMontgomery(publicKeyPolyvec, sp)

@@ -3,38 +3,18 @@
 
 package kyberk2so
 
-type paramsStruct struct {
-	k                      int
-	n                      int
-	q                      int
-	eta                    int
-	polybytes              int
-	polycompressedbytes    int
-	polyvecbytes           int
-	polyveccompressedbytes int
-	qinv                   int
-	symbytes               int
-	secretkeybytes         int
-	publickeybytes         int
-	indcpasecretkeybytes   int
-	indcpapublickeybytes   int
-	indcpabytes            int
-}
-
-var params paramsStruct = paramsStruct{
-	k:                      3,
-	n:                      256,
-	q:                      3329,
-	eta:                    2,
-	polybytes:              384,
-	polycompressedbytes:    128,
-	polyvecbytes:           (3 * 384),
-	polyveccompressedbytes: (3 * 320),
-	qinv:                   62209,
-	symbytes:               32,
-	secretkeybytes:         ((3 * 384) + ((3 * 384) + 32) + 2*32),
-	publickeybytes:         ((3 * 384) + 32),
-	indcpasecretkeybytes:   (3 * 384),
-	indcpapublickeybytes:   ((3 * 384) + 32),
-	indcpabytes:            ((3 * 320) + 128),
-}
+const paramsK int = 3
+const paramsN int = 256
+const paramsQ int = 3329
+const paramsETA int = 2
+const paramsPolyBytes int = 384
+const paramsPolyCompressedBytes int = 128
+const paramsQinv int = 62209
+const paramsSymBytes int = 32
+const paramsPolyvecBytes int = paramsK * paramsPolyBytes
+const paramsPolyvecCompressedBytes int = paramsK * 320
+const paramsSecretKeyBytes int = paramsPolyvecBytes + ((paramsPolyvecBytes + paramsSymBytes) + 2*paramsSymBytes)
+const paramsPublicKeyBytes int = paramsPolyvecBytes + paramsSymBytes
+const paramsIndcpaSecretKeyBytes int = paramsK * paramsPolyBytes
+const paramsIndcpaPublicKeyBytes int = paramsPolyvecBytes + paramsSymBytes
+const paramsIndcpaBytes int = paramsPolyvecCompressedBytes + paramsPolyCompressedBytes

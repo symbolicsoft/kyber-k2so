@@ -8,7 +8,7 @@ lint:
 test:
 	@go clean -testcache
 	@/bin/echo "[Kyber-K2SO] Running test battery..."
-	@go test ./cmd/kyberk2so
+	@go test .
 
 clean:
 	@/bin/echo -n "[Kyber-K2SO] Cleaning up..."
@@ -16,4 +16,4 @@ clean:
 	@$(RM) -r dist
 	@/bin/echo "                   OK"
 
-.PHONY: all windows linux macos freebsd lint test release clean assets build cmd
+.PHONY: all windows linux macos freebsd lint test release clean assets

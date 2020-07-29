@@ -22,7 +22,7 @@ func TestMain(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		if subtle.ConstantTimeCompare(ssA, ssB) == 0 {
+		if subtle.ConstantTimeCompare(ssA[:], ssB[:]) == 0 {
 			t.Error("shared secret failed")
 		}
 	}
