@@ -60,9 +60,9 @@ ok      github.com/symbolicsoft/kyber-k2so      3.114s
 goos: linux
 goarch: amd64
 pkg: github.com/symbolicsoft/kyber-k2so
-BenchmarkKemKeypair-8           1000000000               0.000144 ns/op
-BenchmarkKemEncrypt-8           1000000000               0.000158 ns/op
-BenchmarkKemDecrypt-8           1000000000               0.000179 ns/op
+BenchmarkKemKeypair-8           1000000000               0.000074 ns/op
+BenchmarkKemEncrypt-8           1000000000               0.000084 ns/op
+BenchmarkKemDecrypt-8           1000000000               0.000099 ns/op
 ```
 
 # About Kyber-K2SO
