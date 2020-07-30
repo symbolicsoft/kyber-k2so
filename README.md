@@ -4,6 +4,7 @@
 [![Kyber-K2SO](https://github.com/symbolicsoft/kyber-k2so/workflows/Kyber-K2SO/badge.svg)](https://github.com/symbolicsoft/kyber-k2so/actions)
 [![GoDoc](https://godoc.org/github.com/symbolicsoft/kyber-k2so?status.svg)](https://pkg.go.dev/github.com/symbolicsoft/kyber-k2so?tab=overview)
 [![Go Report Card](https://goreportcard.com/badge/github.com/symbolicsoft/kyber-k2so)](https://goreportcard.com/report/github.com/symbolicsoft/kyber-k2so)
+![GitHub](https://img.shields.io/github/license/symbolicsoft/kyber-k2so)
 
 **Kyber-K2SO** is a clean implementation of the [Kyber](https://pq-crystals.org/kyber) IND-CCA2-secure key encapsulation mechanism (KEM), whose security is based on the hardness of solving the learning-with-errors (LWE) problem over module lattices. Kyber is one of the candidate algorithms submitted to the [NIST post-quantum cryptography project](https://csrc.nist.gov/Projects/Post-Quantum-Cryptography).
 
