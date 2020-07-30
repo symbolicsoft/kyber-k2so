@@ -15,32 +15,3 @@
 
 # Visual Studio Code
 .vscode
-
-# Snapcraft
-snapcraft.login
-
-# Coq
-*.glob
-*.vo
-*.vok
-*.vos
-*.aux
-
-# Scripts
-scripts
-
-# C
-*.so
-*.o
-test_kex1024
-test_kex512
-test_kex768
-test_kyber1024
-test_kyber512
-test_kyber768
-test_speed1024
-test_speed512
-test_speed768
-test_vectors1024
-test_vectors512
-test_vectors768
