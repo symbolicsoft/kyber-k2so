@@ -81,7 +81,6 @@ BenchmarkKemDecrypt768-8    	    8926	    138097 ns/op
 BenchmarkKemDecrypt1024-8   	    6120	    228477 ns/op
 PASS
 ok  	github.com/symbolicsoft/kyber-k2so	20.074s
-
 ```
 
 # About Kyber-K2SO
