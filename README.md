@@ -1,6 +1,7 @@
 <img src="assets/kyber-k2so.png" align="right" height="300" width="300"/>
 
 # Kyber-K2SO
+[![Kyber-K2SO](https://github.com/symbolicsoft/kyber-k2so/workflows/Kyber-K2SO/badge.svg)](https://github.com/symbolicsoft/kyber-k2so/actions)
 [![GoDoc](https://godoc.org/github.com/symbolicsoft/kyber-k2so?status.svg)](https://pkg.go.dev/github.com/symbolicsoft/kyber-k2so?tab=overview)
 [![Go Report Card](https://goreportcard.com/badge/github.com/symbolicsoft/kyber-k2so)](https://goreportcard.com/report/github.com/symbolicsoft/kyber-k2so)
 
