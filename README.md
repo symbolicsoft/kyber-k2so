@@ -11,7 +11,7 @@
 Kyber-K2SO implements only Kyber-768, and does not provide Kyber-512, Kyber-1024, or the _"90s Kyber"_ variants, because there does not appear to be a convincing reason to ever do so.
 
 ## Security Disclaimer
-🚨 This library is offered as-is, and without a guarantee. Therefore, it is expected that changes in the code, repository, and API occur in the future. It is recommended to take caution before using this library in a production application since part of its content is experimental.
+🚨 Extensive effort has been undertaken in order to ensure the correctness, interoperability, safety and reliability of this library. Furthermore, it is unlikely that the API will change in the future. While this library is likely ready for production use, it is offered as-is, and without a guarantee. 
 
 # Features & Usage
 Keeping in mind the Security Disclaimer above, Kyber-K2SO appears to be appropriate for use in any environment supported by Go: client-side application, server-side applications and more. All operations take no more than a few milliseconds on regular computing hardware.
