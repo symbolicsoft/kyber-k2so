@@ -43,6 +43,28 @@ func main() {
 
 Yes, it's that simple!
 
+## Running Tests
+```bash
+> go test
+
+PASS
+ok      github.com/symbolicsoft/kyber-k2so      3.114s
+```
+
+## Running Benchmarks
+```bash
+> go test -bench=.
+
+goos: linux
+goarch: amd64
+pkg: github.com/symbolicsoft/kyber-k2so
+BenchmarkKemKeypair-8           1000000000               0.000144 ns/op
+BenchmarkKemEncrypt-8           1000000000               0.000158 ns/op
+BenchmarkKemDecrypt-8           1000000000               0.000179 ns/op
+PASS
+ok      github.com/symbolicsoft/kyber-k2so      3.411s
+```
+
 # About Kyber-K2SO
 Kyber-K2SO is published by [Symbolic Software](https://symbolic.software) under the MIT License. It is written by [Nadim Kobeissi](https://nadim.computer).
 
