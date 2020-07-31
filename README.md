@@ -85,4 +85,5 @@ ok  	github.com/symbolicsoft/kyber-k2so	16.180s
 # About Kyber-K2SO
 Kyber-K2SO is published by [Symbolic Software](https://symbolic.software) under the MIT License. It is written by [Nadim Kobeissi](https://nadim.computer).
 
-We thank [Peter Schwabe](https://cryptojedi.org/peter) for his feedback during the development of Kyber-K2SO.
+We thank [Peter Schwabe](https://cryptojedi.org/peter) for his feedback during the development of this implementation.
+
