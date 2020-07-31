@@ -33,9 +33,7 @@ func nttFqMul(a int16, b int16) int16 {
 	return byteopsMontgomeryReduce(int32(a) * int32(b))
 }
 
-func ntt(a []int16) []int16 {
-	r := make([]int16, 256)
-	copy(r, a)
+func ntt(r poly) poly {
 	j := 0
 	k := 1
 	for l := 128; l >= 2; l >>= 1 {
@@ -52,9 +50,7 @@ func ntt(a []int16) []int16 {
 	return r
 }
 
-func nttInv(a []int16) []int16 {
-	r := make([]int16, 256)
-	copy(r, a)
+func nttInv(r poly) poly {
 	j := 0
 	k := 0
 	for l := 2; l <= 128; l <<= 1 {

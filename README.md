@@ -16,8 +16,7 @@ Keeping in mind the Security Disclaimer above, Kyber-K2SO appears to be appropri
 
 ## Features
 
-* 🟢 **Purely functional, easy to read code.** Code readability and predictability is prioritized over performance.
-* 🟢 **Smallest codebase.** Kyber-K2SO is to our knowledge the smallest implementation of Kyber Version 2, and is 4.3 times smaller than the reference implementation.
+* 🟢 **Small, easy to read code.** Kyber-K2SO is to our knowledge the smallest implementation of Kyber Version 2.
 * 🟢 **Simple API.** `KemKeypair768()` to generate a private key and a public key, `KemEncrypt768(publicKey)` generate and encrypt a shared secret, and `KemDecrypt768(ciphertext, privateKey)` to decrypt the shared secret. Aside from Kyber-768, Kyber-512 and Kyber-1024 are also offered.
 * 🟢 **Good performance.** Kyber-K2SO is more than fast enough for regular usage in any environment supported by the Go programming language.
 * 🟢 **Constant time (probably).** As far as we can tell, decryption appears to perform in constant time. Further analysis is encouraged.
@@ -70,17 +69,17 @@ ok  	github.com/symbolicsoft/kyber-k2so	1.140s
 goos: linux
 goarch: amd64
 pkg: github.com/symbolicsoft/kyber-k2so
-BenchmarkKemKeypair512-8    	   18256	     55685 ns/op
-BenchmarkKemKeypair768-8    	   12267	     95178 ns/op
-BenchmarkKemKeypair1024-8   	   10000	    146807 ns/op
-BenchmarkKemEncrypt512-8    	   16358	     86358 ns/op
-BenchmarkKemEncrypt768-8    	    7099	    148577 ns/op
-BenchmarkKemEncrypt1024-8   	    7285	    188457 ns/op
-BenchmarkKemDecrypt512-8    	   12092	    113796 ns/op
-BenchmarkKemDecrypt768-8    	    8926	    138097 ns/op
-BenchmarkKemDecrypt1024-8   	    6120	    228477 ns/op
+BenchmarkKemKeypair512-8    	   28089	     45174 ns/op
+BenchmarkKemKeypair768-8    	   15427	     69505 ns/op
+BenchmarkKemKeypair1024-8   	   10000	    126179 ns/op
+BenchmarkKemEncrypt512-8    	   20823	     55941 ns/op
+BenchmarkKemEncrypt768-8    	   14752	     87413 ns/op
+BenchmarkKemEncrypt1024-8   	    9400	    127322 ns/op
+BenchmarkKemDecrypt512-8    	   17260	     71100 ns/op
+BenchmarkKemDecrypt768-8    	   10000	    100249 ns/op
+BenchmarkKemDecrypt1024-8   	    8785	    144723 ns/op
 PASS
-ok  	github.com/symbolicsoft/kyber-k2so	20.074s
+ok  	github.com/symbolicsoft/kyber-k2so	15.215s
 ```
 
 # About Kyber-K2SO

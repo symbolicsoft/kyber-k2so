@@ -297,63 +297,45 @@ func BenchmarkKemKeypair1024(b *testing.B) {
 
 func BenchmarkKemEncrypt512(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		_, _, err := KemEncrypt512(kemTests512[n%99].publicKey)
-		if err != nil {
-			b.Error(err)
-		}
+		KemEncrypt512(kemTests512[n%99].publicKey)
 	}
 }
 
 func BenchmarkKemEncrypt768(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		_, _, err := KemEncrypt768(kemTests768[n%99].publicKey)
-		if err != nil {
-			b.Error(err)
-		}
+		KemEncrypt768(kemTests768[n%99].publicKey)
 	}
 }
 
 func BenchmarkKemEncrypt1024(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		_, _, err := KemEncrypt1024(kemTests1024[n%99].publicKey)
-		if err != nil {
-			b.Error(err)
-		}
+		KemEncrypt1024(kemTests1024[n%99].publicKey)
 	}
 }
 
 func BenchmarkKemDecrypt512(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		_, err := KemDecrypt512(
+		KemDecrypt512(
 			kemTests512[n%99].ciphertext,
 			kemTests512[n%99].privateKey,
 		)
-		if err != nil {
-			b.Error(err)
-		}
 	}
 }
 
 func BenchmarkKemDecrypt768(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		_, err := KemDecrypt768(
+		KemDecrypt768(
 			kemTests768[n%99].ciphertext,
 			kemTests768[n%99].privateKey,
 		)
-		if err != nil {
-			b.Error(err)
-		}
 	}
 }
 
 func BenchmarkKemDecrypt1024(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		_, err := KemDecrypt1024(
+		KemDecrypt1024(
 			kemTests1024[n%99].ciphertext,
 			kemTests1024[n%99].privateKey,
 		)
-		if err != nil {
-			b.Error(err)
-		}
 	}
 }

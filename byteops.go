@@ -15,15 +15,15 @@ func byteopsLoad32(x []byte) uint32 {
 func byteopsCbd(buf []byte) poly {
 	var t, d uint32
 	var a, b int16
-	r := polyNew()
+	var r poly
 	for i := 0; i < paramsN/8; i++ {
-		t = byteopsLoad32(buf[4*i : (4*i)+4])
+		t = byteopsLoad32(buf[4*i:])
 		d = t & 0x55555555
 		d = d + ((t >> 1) & 0x55555555)
 		for j := 0; j < 8; j++ {
 			a = int16((d >> (4*j + 0)) & 0x3)
 			b = int16((d >> (4*j + 2)) & 0x3)
-			r.coeffs[8*i+j] = a - b
+			r[8*i+j] = a - b
 		}
 	}
 	return r

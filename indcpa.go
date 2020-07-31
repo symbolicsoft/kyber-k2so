@@ -59,12 +59,12 @@ func indcpaUnpackCiphertext(c []byte, paramsK int) (polyvec, poly) {
 	}
 }
 
-func indcpaRejUniform(l int, buf []byte, bufl int) ([]int16, int) {
-	r := make([]int16, l)
+func indcpaRejUniform(buf []byte, bufl int) (poly, int) {
+	var r poly
 	var val uint16
 	ctr := 0
 	pos := 0
-	for ctr < l && pos+2 <= bufl {
+	for ctr < paramsN && pos+2 <= bufl {
 		val = uint16(buf[pos]) | (uint16(buf[pos+1]) << 8)
 		pos = pos + 2
 		if val < uint16(19*paramsQ) {
@@ -97,18 +97,17 @@ func indcpaGenMatrix(seed []byte, transposed bool, paramsK int) ([]polyvec, erro
 			if err != nil {
 				return []polyvec{}, err
 			}
-			r[i].vec[j].coeffs, ctr = indcpaRejUniform(paramsN, buf, len(buf))
+			r[i][j], ctr = indcpaRejUniform(buf, len(buf))
 			for ctr < paramsN {
 				bufn := make([]byte, 168)
 				_, err = xof.Read(bufn)
 				if err != nil {
 					return []polyvec{}, err
 				}
-				missing, ctrn := indcpaRejUniform(paramsN-ctr, bufn, 168)
-				r[i].vec[j].coeffs = append(
-					r[i].vec[j].coeffs[:ctr],
-					missing[:paramsN-ctr]...,
-				)
+				missing, ctrn := indcpaRejUniform(bufn, 168)
+				for k := ctr; k < paramsN-ctr; k++ {
+					r[i][j][k] = missing[paramsN-ctr+k]
+				}
 				ctr = ctr + ctrn
 			}
 		}
@@ -145,21 +144,20 @@ func indcpaKeypair(paramsK int) ([]byte, []byte, error) {
 	}
 	var nonce byte
 	for i := 0; i < paramsK; i++ {
-		skpv.vec[i] = polyGetNoise(noiseSeed, nonce)
+		skpv[i] = polyGetNoise(noiseSeed, nonce)
 		nonce = nonce + 1
 	}
 	for i := 0; i < paramsK; i++ {
-		e.vec[i] = polyGetNoise(noiseSeed, nonce)
+		e[i] = polyGetNoise(noiseSeed, nonce)
 		nonce = nonce + 1
 	}
-	skpv = polyvecNtt(skpv, paramsK)
-	e = polyvecNtt(e, paramsK)
+	polyvecNtt(skpv, paramsK)
+	polyvecNtt(e, paramsK)
 	for i := 0; i < paramsK; i++ {
-		pkpv.vec[i] = polyvecPointWiseAccMontgomery(a[i], skpv, paramsK)
-		pkpv.vec[i] = polyToMont(pkpv.vec[i])
+		pkpv[i] = polyToMont(polyvecPointWiseAccMontgomery(a[i], skpv, paramsK))
 	}
-	pkpv = polyvecAdd(pkpv, e, paramsK)
-	pkpv = polyvecReduce(pkpv, paramsK)
+	polyvecAdd(pkpv, e, paramsK)
+	polyvecReduce(pkpv, paramsK)
 	return indcpaPackPrivateKey(skpv, paramsK), indcpaPackPublicKey(pkpv, publicSeed, paramsK), nil
 }
 
@@ -167,7 +165,6 @@ func indcpaEncrypt(m []byte, publicKey []byte, coins []byte, paramsK int) ([]byt
 	sp := polyvecNew(paramsK)
 	ep := polyvecNew(paramsK)
 	bp := polyvecNew(paramsK)
-	nonce := byte(0)
 	publicKeyPolyvec, seed := indcpaUnpackPublicKey(publicKey, paramsK)
 	k := polyFromMsg(m)
 	at, err := indcpaGenMatrix(seed[:paramsSymBytes], true, paramsK)
@@ -175,33 +172,26 @@ func indcpaEncrypt(m []byte, publicKey []byte, coins []byte, paramsK int) ([]byt
 		return []byte{}, err
 	}
 	for i := 0; i < paramsK; i++ {
-		sp.vec[i] = polyGetNoise(coins, nonce)
-		nonce = nonce + 1
+		sp[i] = polyGetNoise(coins, byte(i))
+		ep[i] = polyGetNoise(coins, byte(i+paramsK))
 	}
+	epp := polyGetNoise(coins, byte(paramsK*2))
+	polyvecNtt(sp, paramsK)
 	for i := 0; i < paramsK; i++ {
-		ep.vec[i] = polyGetNoise(coins, nonce)
-		nonce = nonce + 1
-	}
-	epp := polyGetNoise(coins, nonce)
-	sp = polyvecNtt(sp, paramsK)
-	for i := 0; i < paramsK; i++ {
-		bp.vec[i] = polyvecPointWiseAccMontgomery(at[i], sp, paramsK)
+		bp[i] = polyvecPointWiseAccMontgomery(at[i], sp, paramsK)
 	}
 	v := polyvecPointWiseAccMontgomery(publicKeyPolyvec, sp, paramsK)
-	bp = polyvecInvNttToMont(bp, paramsK)
+	polyvecInvNttToMont(bp, paramsK)
 	v = polyInvNttToMont(v)
-	bp = polyvecAdd(bp, ep, paramsK)
-	v = polyAdd(v, epp)
-	v = polyAdd(v, k)
-	bp = polyvecReduce(bp, paramsK)
-	v = polyReduce(v)
-	return indcpaPackCiphertext(bp, v, paramsK), nil
+	polyvecAdd(bp, ep, paramsK)
+	v = polyAdd(polyAdd(v, epp), k)
+	return indcpaPackCiphertext(polyvecReduce(bp, paramsK), polyReduce(v), paramsK), nil
 }
 
 func indcpaDecrypt(c []byte, privateKey []byte, paramsK int) []byte {
 	bp, v := indcpaUnpackCiphertext(c, paramsK)
 	privateKeyPolyvec := indcpaUnpackPrivateKey(privateKey, paramsK)
-	bp = polyvecNtt(bp, paramsK)
+	polyvecNtt(bp, paramsK)
 	mp := polyvecPointWiseAccMontgomery(privateKeyPolyvec, bp, paramsK)
 	mp = polyInvNttToMont(mp)
 	mp = polySub(v, mp)
