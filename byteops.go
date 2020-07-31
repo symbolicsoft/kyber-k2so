@@ -3,6 +3,7 @@
 
 package kyberk2so
 
+// byteopsLoad32 returns a 32-bit unsigned integer loaded from byte x.
 func byteopsLoad32(x []byte) uint32 {
 	var r uint32
 	r = uint32(x[0])
@@ -12,6 +13,9 @@ func byteopsLoad32(x []byte) uint32 {
 	return r
 }
 
+// byteopsCbd computers a polynomial with coefficients distributed
+// according to a centered binomial distribution with parameter paramsETA,
+// given an array of uniformly random bytes.
 func byteopsCbd(buf []byte) poly {
 	var t, d uint32
 	var a, b int16
@@ -22,13 +26,15 @@ func byteopsCbd(buf []byte) poly {
 		d = d + ((t >> 1) & 0x55555555)
 		for j := 0; j < 8; j++ {
 			a = int16((d >> (4*j + 0)) & 0x3)
-			b = int16((d >> (4*j + 2)) & 0x3)
+			b = int16((d >> (4*j + paramsETA)) & 0x3)
 			r[8*i+j] = a - b
 		}
 	}
 	return r
 }
 
+// byteopsMontgomeryReduce computes a Montgomery reduction; given
+// a 32-bit integer `a`, returns `a * R^-1 mod Q` where `R=2^16`.
 func byteopsMontgomeryReduce(a int32) int16 {
 	u := int16(a * int32(paramsQinv))
 	t := int32(u) * int32(paramsQ)
@@ -37,6 +43,9 @@ func byteopsMontgomeryReduce(a int32) int16 {
 	return int16(t)
 }
 
+// byteopsBarrettReduce computes a Barrett reduction; given
+// a 16-bit integer `a`, returns a 16-bit integer congruent to
+// `a mod Q` in {0,...,Q}.
 func byteopsBarrettReduce(a int16) int16 {
 	var t int16
 	var v int16 = int16(((uint32(1) << 26) + uint32(paramsQ/2)) / uint32(paramsQ))
@@ -45,6 +54,7 @@ func byteopsBarrettReduce(a int16) int16 {
 	return a - t
 }
 
+// byteopsCSubQ conditionally subtracts Q from a.
 func byteopsCSubQ(a int16) int16 {
 	a = a - int16(paramsQ)
 	a = a + ((a >> 15) & int16(paramsQ))

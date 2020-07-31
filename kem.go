@@ -183,9 +183,9 @@ func KemDecrypt512(
 	const paramsK int = 2
 	var sharedSecretFixedLength [KyberSSBytes]byte
 	sharedSecret := make([]byte, KyberSSBytes)
-	indcpaPrivateKey := privateKey[:paramsIndcpaSecretKeyBytesK2]
-	pki := paramsIndcpaSecretKeyBytesK2 + paramsIndcpaPublicKeyBytesK2
-	publicKey := privateKey[paramsIndcpaSecretKeyBytesK2:pki]
+	indcpaPrivateKey := privateKey[:paramsIndcpaSecretKeyBytesK512]
+	pki := paramsIndcpaSecretKeyBytesK512 + paramsIndcpaPublicKeyBytesK512
+	publicKey := privateKey[paramsIndcpaSecretKeyBytesK512:pki]
 	buf := indcpaDecrypt(ciphertext[:], indcpaPrivateKey, paramsK)
 	ski := Kyber512SKBytes - 2*paramsSymBytes
 	kr := sha3.Sum512(append(buf, privateKey[ski:ski+paramsSymBytes]...))
@@ -212,9 +212,9 @@ func KemDecrypt768(
 	const paramsK int = 3
 	var sharedSecretFixedLength [KyberSSBytes]byte
 	sharedSecret := make([]byte, KyberSSBytes)
-	indcpaPrivateKey := privateKey[:paramsIndcpaSecretKeyBytesK3]
-	pki := paramsIndcpaSecretKeyBytesK3 + paramsIndcpaPublicKeyBytesK3
-	publicKey := privateKey[paramsIndcpaSecretKeyBytesK3:pki]
+	indcpaPrivateKey := privateKey[:paramsIndcpaSecretKeyBytesK768]
+	pki := paramsIndcpaSecretKeyBytesK768 + paramsIndcpaPublicKeyBytesK768
+	publicKey := privateKey[paramsIndcpaSecretKeyBytesK768:pki]
 	buf := indcpaDecrypt(ciphertext[:], indcpaPrivateKey, paramsK)
 	ski := Kyber768SKBytes - 2*paramsSymBytes
 	kr := sha3.Sum512(append(buf, privateKey[ski:ski+paramsSymBytes]...))
@@ -241,9 +241,9 @@ func KemDecrypt1024(
 	const paramsK int = 4
 	var sharedSecretFixedLength [KyberSSBytes]byte
 	sharedSecret := make([]byte, KyberSSBytes)
-	indcpaPrivateKey := privateKey[:paramsIndcpaSecretKeyBytesK4]
-	pki := paramsIndcpaSecretKeyBytesK4 + paramsIndcpaPublicKeyBytesK4
-	publicKey := privateKey[paramsIndcpaSecretKeyBytesK4:pki]
+	indcpaPrivateKey := privateKey[:paramsIndcpaSecretKeyBytesK1024]
+	pki := paramsIndcpaSecretKeyBytesK1024 + paramsIndcpaPublicKeyBytesK1024
+	publicKey := privateKey[paramsIndcpaSecretKeyBytesK1024:pki]
 	buf := indcpaDecrypt(ciphertext[:], indcpaPrivateKey, paramsK)
 	ski := Kyber1024SKBytes - 2*paramsSymBytes
 	kr := sha3.Sum512(append(buf, privateKey[ski:ski+paramsSymBytes]...))

@@ -29,10 +29,14 @@ var nttZetasInv [128]int16 = [128]int16{
 	3127, 3042, 1907, 1836, 1517, 359, 758, 1441,
 }
 
+// nttFqMul performs multiplication followed by Montgomery reduction
+// and returns a 16-bit integer congruent to `a*b*R^{-1} mod Q`.
 func nttFqMul(a int16, b int16) int16 {
 	return byteopsMontgomeryReduce(int32(a) * int32(b))
 }
 
+// ntt performs an inplace number-theoretic transform (NTT) in `Rq`.
+// The input is in standard order, the output is in bit-reversed order.
 func ntt(r poly) poly {
 	j := 0
 	k := 1
@@ -50,6 +54,9 @@ func ntt(r poly) poly {
 	return r
 }
 
+// nttInv performs an inplace inverse number-theoretic transform (NTT)
+// in `Rq` and multiplication by Montgomery factor 2^16.
+// The input is in bit-reversed order, the output is in standard order.
 func nttInv(r poly) poly {
 	j := 0
 	k := 0
@@ -71,6 +78,9 @@ func nttInv(r poly) poly {
 	return r
 }
 
+// nttBaseMul performs the multiplication of polynomials
+// in `Zq[X]/(X^2-zeta)`. Used for multiplication of elements
+// in `Rq` in the number-theoretic transformation domain.
 func nttBaseMul(
 	a0 int16, a1 int16,
 	b0 int16, b1 int16,
