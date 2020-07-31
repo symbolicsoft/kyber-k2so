@@ -31,7 +31,7 @@ go get -u github.com/symbolicsoft/kyber-k2so
 package main
 
 import (
-	"github.com/symbolicsoft/kyber-k2so"
+	kyberk2so "github.com/symbolicsoft/kyber-k2so"
 )
 
 func main() {
