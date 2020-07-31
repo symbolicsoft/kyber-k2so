@@ -248,28 +248,19 @@ func polySub(a poly, b poly) poly {
 }
 
 func polyvecCompress(a polyvec, paramsK int) []byte {
+	var r []byte
 	a = polyvecCSubQ(a, paramsK)
 	rr := 0
 	switch paramsK {
 	case 2:
-		r := make([]byte, paramsPolyvecCompressedBytesK2)
-		t := make([]uint16, 4)
-		for i := 0; i < paramsK; i++ {
-			for j := 0; j < paramsN/4; j++ {
-				for k := 0; k < 4; k++ {
-					t[k] = uint16((((uint32(a.vec[i].coeffs[4*j+k]) << 10) + uint32(paramsQ/2)) / uint32(paramsQ)) & 0x3ff)
-				}
-				r[rr+0] = byte(t[0] >> 0)
-				r[rr+1] = byte((t[0] >> 8) | (t[1] << 2))
-				r[rr+2] = byte((t[1] >> 6) | (t[2] << 4))
-				r[rr+3] = byte((t[2] >> 4) | (t[3] << 6))
-				r[rr+4] = byte((t[3] >> 2))
-				rr = rr + 5
-			}
-		}
-		return r
+		r = make([]byte, paramsPolyvecCompressedBytesK2)
 	case 3:
-		r := make([]byte, paramsPolyvecCompressedBytesK3)
+		r = make([]byte, paramsPolyvecCompressedBytesK3)
+	case 4:
+		r = make([]byte, paramsPolyvecCompressedBytesK4)
+	}
+	switch paramsK {
+	case 2, 3:
 		t := make([]uint16, 4)
 		for i := 0; i < paramsK; i++ {
 			for j := 0; j < paramsN/4; j++ {
@@ -286,7 +277,6 @@ func polyvecCompress(a polyvec, paramsK int) []byte {
 		}
 		return r
 	default:
-		r := make([]byte, paramsPolyvecCompressedBytesK4)
 		t := make([]uint16, 8)
 		for i := 0; i < paramsK; i++ {
 			for j := 0; j < paramsN/8; j++ {
