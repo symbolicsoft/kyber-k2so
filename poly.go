@@ -225,7 +225,7 @@ func polySub(a poly, b poly) poly {
 
 func polyvecCompress(a polyvec, paramsK int) []byte {
 	var r []byte
-	a = polyvecCSubQ(a, paramsK)
+	polyvecCSubQ(a, paramsK)
 	rr := 0
 	switch paramsK {
 	case 2:
@@ -335,18 +335,16 @@ func polyvecFromBytes(a []byte, paramsK int) polyvec {
 	return r
 }
 
-func polyvecNtt(r polyvec, paramsK int) polyvec {
+func polyvecNtt(r polyvec, paramsK int) {
 	for i := 0; i < paramsK; i++ {
 		r[i] = polyNtt(r[i])
 	}
-	return r
 }
 
-func polyvecInvNttToMont(r polyvec, paramsK int) polyvec {
+func polyvecInvNttToMont(r polyvec, paramsK int) {
 	for i := 0; i < paramsK; i++ {
 		r[i] = polyInvNttToMont(r[i])
 	}
-	return r
 }
 
 func polyvecPointWiseAccMontgomery(a polyvec, b polyvec, paramsK int) poly {
@@ -358,23 +356,20 @@ func polyvecPointWiseAccMontgomery(a polyvec, b polyvec, paramsK int) poly {
 	return polyReduce(r)
 }
 
-func polyvecReduce(r polyvec, paramsK int) polyvec {
+func polyvecReduce(r polyvec, paramsK int) {
 	for i := 0; i < paramsK; i++ {
 		r[i] = polyReduce(r[i])
 	}
-	return r
 }
 
-func polyvecCSubQ(r polyvec, paramsK int) polyvec {
+func polyvecCSubQ(r polyvec, paramsK int) {
 	for i := 0; i < paramsK; i++ {
 		r[i] = polyCSubQ(r[i])
 	}
-	return r
 }
 
-func polyvecAdd(a polyvec, b polyvec, paramsK int) polyvec {
+func polyvecAdd(a polyvec, b polyvec, paramsK int) {
 	for i := 0; i < paramsK; i++ {
 		a[i] = polyAdd(a[i], b[i])
 	}
-	return a
 }

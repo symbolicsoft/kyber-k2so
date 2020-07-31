@@ -69,17 +69,17 @@ ok  	github.com/symbolicsoft/kyber-k2so	1.140s
 goos: linux
 goarch: amd64
 pkg: github.com/symbolicsoft/kyber-k2so
-BenchmarkKemKeypair512-8    	   28089	     45174 ns/op
-BenchmarkKemKeypair768-8    	   15427	     69505 ns/op
-BenchmarkKemKeypair1024-8   	   10000	    126179 ns/op
-BenchmarkKemEncrypt512-8    	   20823	     55941 ns/op
-BenchmarkKemEncrypt768-8    	   14752	     87413 ns/op
-BenchmarkKemEncrypt1024-8   	    9400	    127322 ns/op
-BenchmarkKemDecrypt512-8    	   17260	     71100 ns/op
-BenchmarkKemDecrypt768-8    	   10000	    100249 ns/op
-BenchmarkKemDecrypt1024-8   	    8785	    144723 ns/op
+BenchmarkKemKeypair512-8    	   28116	     41519 ns/op
+BenchmarkKemKeypair768-8    	   15864	     74150 ns/op
+BenchmarkKemKeypair1024-8   	   10000	    105946 ns/op
+BenchmarkKemEncrypt512-8    	   21409	     56336 ns/op
+BenchmarkKemEncrypt768-8    	   13629	     87541 ns/op
+BenchmarkKemEncrypt1024-8   	    9987	    131054 ns/op
+BenchmarkKemDecrypt512-8    	   17650	     65348 ns/op
+BenchmarkKemDecrypt768-8    	   12352	     99300 ns/op
+BenchmarkKemDecrypt1024-8   	    8913	    140804 ns/op
 PASS
-ok  	github.com/symbolicsoft/kyber-k2so	15.215s
+ok  	github.com/symbolicsoft/kyber-k2so	16.180s
 ```
 
 # About Kyber-K2SO

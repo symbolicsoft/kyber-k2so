@@ -185,7 +185,8 @@ func indcpaEncrypt(m []byte, publicKey []byte, coins []byte, paramsK int) ([]byt
 	v = polyInvNttToMont(v)
 	polyvecAdd(bp, ep, paramsK)
 	v = polyAdd(polyAdd(v, epp), k)
-	return indcpaPackCiphertext(polyvecReduce(bp, paramsK), polyReduce(v), paramsK), nil
+	polyvecReduce(bp, paramsK)
+	return indcpaPackCiphertext(bp, polyReduce(v), paramsK), nil
 }
 
 func indcpaDecrypt(c []byte, privateKey []byte, paramsK int) []byte {
