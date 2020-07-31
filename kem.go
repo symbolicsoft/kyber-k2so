@@ -1,7 +1,7 @@
 /* SPDX-FileCopyrightText: © 2020-2021 Nadim Kobeissi <nadim@symbolic.software>
  * SPDX-License-Identifier: MIT */
 
-// Package kyberk2so providesis a clean implementation of the Kyber IND-CCA2-secure
+// Package kyberk2so provides a clean implementation of the Kyber IND-CCA2-secure
 // key encapsulation mechanism (KEM), whose security is based on the hardness of
 // solving the learning-with-errors (LWE) problem over module lattices.
 package kyberk2so
@@ -17,10 +17,10 @@ import (
 // and a corresponding Kyber-512 public key.
 // An accompanying error is returned if no sufficient
 // randomness could be obtained from the system.
-func KemKeypair512() ([paramsSecretKeyBytesK2]byte, [paramsPublicKeyBytesK2]byte, error) {
+func KemKeypair512() ([Kyber512SKBytes]byte, [Kyber512PKBytes]byte, error) {
 	const paramsK = 2
-	var privateKeyFixedLength [paramsSecretKeyBytesK2]byte
-	var publicKeyFixedLength [paramsPublicKeyBytesK2]byte
+	var privateKeyFixedLength [Kyber512SKBytes]byte
+	var publicKeyFixedLength [Kyber512PKBytes]byte
 	indcpaPrivateKey, indcpaPublicKey, err := indcpaKeypair(paramsK)
 	if err != nil {
 		return privateKeyFixedLength, publicKeyFixedLength, err
@@ -43,10 +43,10 @@ func KemKeypair512() ([paramsSecretKeyBytesK2]byte, [paramsPublicKeyBytesK2]byte
 // and a corresponding Kyber-768 public key.
 // An accompanying error is returned if no sufficient
 // randomness could be obtained from the system.
-func KemKeypair768() ([paramsSecretKeyBytesK3]byte, [paramsPublicKeyBytesK3]byte, error) {
+func KemKeypair768() ([Kyber768SKBytes]byte, [Kyber768PKBytes]byte, error) {
 	const paramsK int = 3
-	var privateKeyFixedLength [paramsSecretKeyBytesK3]byte
-	var publicKeyFixedLength [paramsPublicKeyBytesK3]byte
+	var privateKeyFixedLength [Kyber768SKBytes]byte
+	var publicKeyFixedLength [Kyber768PKBytes]byte
 	indcpaPrivateKey, indcpaPublicKey, err := indcpaKeypair(paramsK)
 	if err != nil {
 		return privateKeyFixedLength, publicKeyFixedLength, err
@@ -69,10 +69,10 @@ func KemKeypair768() ([paramsSecretKeyBytesK3]byte, [paramsPublicKeyBytesK3]byte
 // and a corresponding Kyber-1024 public key.
 // An accompanying error is returned if no sufficient
 // randomness could be obtained from the system.
-func KemKeypair1024() ([paramsSecretKeyBytesK4]byte, [paramsPublicKeyBytesK4]byte, error) {
+func KemKeypair1024() ([Kyber1024SKBytes]byte, [Kyber1024PKBytes]byte, error) {
 	const paramsK int = 4
-	var privateKeyFixedLength [paramsSecretKeyBytesK4]byte
-	var publicKeyFixedLength [paramsPublicKeyBytesK4]byte
+	var privateKeyFixedLength [Kyber1024SKBytes]byte
+	var publicKeyFixedLength [Kyber1024PKBytes]byte
 	indcpaPrivateKey, indcpaPublicKey, err := indcpaKeypair(paramsK)
 	if err != nil {
 		return privateKeyFixedLength, publicKeyFixedLength, err
@@ -95,12 +95,12 @@ func KemKeypair1024() ([paramsSecretKeyBytesK4]byte, [paramsPublicKeyBytesK4]byt
 // and returns a ciphertext and a 32-byte shared secret.
 // An accompanying error is returned if no sufficient
 // randomness could be obtained from the system.
-func KemEncrypt512(publicKey [paramsPublicKeyBytesK2]byte) (
-	[paramsIndcpaBytesK2]byte, [paramsSSBytes]byte, error,
+func KemEncrypt512(publicKey [Kyber512PKBytes]byte) (
+	[Kyber512CTBytes]byte, [KyberSSBytes]byte, error,
 ) {
 	const paramsK int = 2
-	var ciphertextFixedLength [paramsIndcpaBytesK2]byte
-	var sharedSecretFixedLength [paramsSSBytes]byte
+	var ciphertextFixedLength [Kyber512CTBytes]byte
+	var sharedSecretFixedLength [KyberSSBytes]byte
 	sharedSecret := make([]byte, paramsSymBytes)
 	buf := make([]byte, 2*paramsSymBytes)
 	_, err := rand.Read(buf[:paramsSymBytes])
@@ -122,12 +122,12 @@ func KemEncrypt512(publicKey [paramsPublicKeyBytesK2]byte) (
 // returns a ciphertext and a 32-byte shared secret.
 // An accompanying error is returned if no sufficient
 // randomness could be obtained from the system.
-func KemEncrypt768(publicKey [paramsPublicKeyBytesK3]byte) (
-	[paramsIndcpaBytesK3]byte, [paramsSSBytes]byte, error,
+func KemEncrypt768(publicKey [Kyber768PKBytes]byte) (
+	[Kyber768CTBytes]byte, [KyberSSBytes]byte, error,
 ) {
 	const paramsK int = 3
-	var ciphertextFixedLength [paramsIndcpaBytesK3]byte
-	var sharedSecretFixedLength [paramsSSBytes]byte
+	var ciphertextFixedLength [Kyber768CTBytes]byte
+	var sharedSecretFixedLength [KyberSSBytes]byte
 	sharedSecret := make([]byte, paramsSymBytes)
 	buf := make([]byte, 2*paramsSymBytes)
 	_, err := rand.Read(buf[:paramsSymBytes])
@@ -149,12 +149,12 @@ func KemEncrypt768(publicKey [paramsPublicKeyBytesK3]byte) (
 // and returns a ciphertext and a 32-byte shared secret.
 // An accompanying error is returned if no sufficient
 // randomness could be obtained from the system.
-func KemEncrypt1024(publicKey [paramsPublicKeyBytesK4]byte) (
-	[paramsIndcpaBytesK4]byte, [paramsSSBytes]byte, error,
+func KemEncrypt1024(publicKey [Kyber1024PKBytes]byte) (
+	[Kyber1024CTBytes]byte, [KyberSSBytes]byte, error,
 ) {
 	const paramsK int = 4
-	var ciphertextFixedLength [paramsIndcpaBytesK4]byte
-	var sharedSecretFixedLength [paramsSSBytes]byte
+	var ciphertextFixedLength [Kyber1024CTBytes]byte
+	var sharedSecretFixedLength [KyberSSBytes]byte
 	sharedSecret := make([]byte, paramsSymBytes)
 	buf := make([]byte, 2*paramsSymBytes)
 	_, err := rand.Read(buf[:paramsSymBytes])
@@ -177,23 +177,23 @@ func KemEncrypt1024(publicKey [paramsPublicKeyBytesK4]byte) (
 // An accompanying error is returned if no sufficient
 // randomness could be obtained from the system.
 func KemDecrypt512(
-	ciphertext [paramsIndcpaBytesK2]byte,
-	privateKey [paramsSecretKeyBytesK2]byte,
-) ([paramsSymBytes]byte, error) {
+	ciphertext [Kyber512CTBytes]byte,
+	privateKey [Kyber512SKBytes]byte,
+) ([KyberSSBytes]byte, error) {
 	const paramsK int = 2
-	var sharedSecretFixedLength [paramsSSBytes]byte
-	sharedSecret := make([]byte, paramsSymBytes)
+	var sharedSecretFixedLength [KyberSSBytes]byte
+	sharedSecret := make([]byte, KyberSSBytes)
 	indcpaPrivateKey := privateKey[:paramsIndcpaSecretKeyBytesK2]
 	pki := paramsIndcpaSecretKeyBytesK2 + paramsIndcpaPublicKeyBytesK2
 	publicKey := privateKey[paramsIndcpaSecretKeyBytesK2:pki]
 	buf := indcpaDecrypt(ciphertext[:], indcpaPrivateKey, paramsK)
-	ski := paramsSecretKeyBytesK2 - 2*paramsSymBytes
+	ski := Kyber512SKBytes - 2*paramsSymBytes
 	kr := sha3.Sum512(append(buf, privateKey[ski:ski+paramsSymBytes]...))
 	cmp, err := indcpaEncrypt(buf, publicKey, kr[paramsSymBytes:], paramsK)
 	fail := byte(1 - subtle.ConstantTimeCompare(ciphertext[:], cmp))
 	krh := sha3.Sum256(ciphertext[:])
 	for i := 0; i < paramsSymBytes; i++ {
-		skx := privateKey[:paramsSecretKeyBytesK2-paramsSymBytes+i]
+		skx := privateKey[:Kyber512SKBytes-paramsSymBytes+i]
 		kr[i] = kr[i] ^ (fail & (kr[i] ^ skx[i]))
 	}
 	sha3.ShakeSum256(sharedSecret, append(kr[:paramsSymBytes], krh[:]...))
@@ -206,23 +206,23 @@ func KemDecrypt512(
 // An accompanying error is returned if no sufficient
 // randomness could be obtained from the system.
 func KemDecrypt768(
-	ciphertext [paramsIndcpaBytesK3]byte,
-	privateKey [paramsSecretKeyBytesK3]byte,
-) ([paramsSymBytes]byte, error) {
+	ciphertext [Kyber768CTBytes]byte,
+	privateKey [Kyber768SKBytes]byte,
+) ([KyberSSBytes]byte, error) {
 	const paramsK int = 3
-	var sharedSecretFixedLength [paramsSSBytes]byte
-	sharedSecret := make([]byte, paramsSymBytes)
+	var sharedSecretFixedLength [KyberSSBytes]byte
+	sharedSecret := make([]byte, KyberSSBytes)
 	indcpaPrivateKey := privateKey[:paramsIndcpaSecretKeyBytesK3]
 	pki := paramsIndcpaSecretKeyBytesK3 + paramsIndcpaPublicKeyBytesK3
 	publicKey := privateKey[paramsIndcpaSecretKeyBytesK3:pki]
 	buf := indcpaDecrypt(ciphertext[:], indcpaPrivateKey, paramsK)
-	ski := paramsSecretKeyBytesK3 - 2*paramsSymBytes
+	ski := Kyber768SKBytes - 2*paramsSymBytes
 	kr := sha3.Sum512(append(buf, privateKey[ski:ski+paramsSymBytes]...))
 	cmp, err := indcpaEncrypt(buf, publicKey, kr[paramsSymBytes:], paramsK)
 	fail := byte(1 - subtle.ConstantTimeCompare(ciphertext[:], cmp))
 	krh := sha3.Sum256(ciphertext[:])
 	for i := 0; i < paramsSymBytes; i++ {
-		skx := privateKey[:paramsSecretKeyBytesK3-paramsSymBytes+i]
+		skx := privateKey[:Kyber768SKBytes-paramsSymBytes+i]
 		kr[i] = kr[i] ^ (fail & (kr[i] ^ skx[i]))
 	}
 	sha3.ShakeSum256(sharedSecret, append(kr[:paramsSymBytes], krh[:]...))
@@ -235,23 +235,23 @@ func KemDecrypt768(
 // An accompanying error is returned if no sufficient
 // randomness could be obtained from the system.
 func KemDecrypt1024(
-	ciphertext [paramsIndcpaBytesK4]byte,
-	privateKey [paramsSecretKeyBytesK4]byte,
-) ([paramsSymBytes]byte, error) {
+	ciphertext [Kyber1024CTBytes]byte,
+	privateKey [Kyber1024SKBytes]byte,
+) ([KyberSSBytes]byte, error) {
 	const paramsK int = 4
-	var sharedSecretFixedLength [paramsSSBytes]byte
-	sharedSecret := make([]byte, paramsSymBytes)
+	var sharedSecretFixedLength [KyberSSBytes]byte
+	sharedSecret := make([]byte, KyberSSBytes)
 	indcpaPrivateKey := privateKey[:paramsIndcpaSecretKeyBytesK4]
 	pki := paramsIndcpaSecretKeyBytesK4 + paramsIndcpaPublicKeyBytesK4
 	publicKey := privateKey[paramsIndcpaSecretKeyBytesK4:pki]
 	buf := indcpaDecrypt(ciphertext[:], indcpaPrivateKey, paramsK)
-	ski := paramsSecretKeyBytesK4 - 2*paramsSymBytes
+	ski := Kyber1024SKBytes - 2*paramsSymBytes
 	kr := sha3.Sum512(append(buf, privateKey[ski:ski+paramsSymBytes]...))
 	cmp, err := indcpaEncrypt(buf, publicKey, kr[paramsSymBytes:], paramsK)
 	fail := byte(1 - subtle.ConstantTimeCompare(ciphertext[:], cmp))
 	krh := sha3.Sum256(ciphertext[:])
 	for i := 0; i < paramsSymBytes; i++ {
-		skx := privateKey[:paramsSecretKeyBytesK4-paramsSymBytes+i]
+		skx := privateKey[:Kyber1024SKBytes-paramsSymBytes+i]
 		kr[i] = kr[i] ^ (fail & (kr[i] ^ skx[i]))
 	}
 	sha3.ShakeSum256(sharedSecret, append(kr[:paramsSymBytes], krh[:]...))

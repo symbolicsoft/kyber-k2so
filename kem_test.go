@@ -15,24 +15,24 @@ import (
 )
 
 type kemTest512 struct {
-	privateKey   [paramsSecretKeyBytesK2]byte
-	publicKey    [paramsPublicKeyBytesK2]byte
-	ciphertext   [paramsIndcpaBytesK2]byte
-	sharedSecret [paramsSSBytes]byte
+	privateKey   [Kyber512SKBytes]byte
+	publicKey    [Kyber512PKBytes]byte
+	ciphertext   [Kyber512CTBytes]byte
+	sharedSecret [KyberSSBytes]byte
 }
 
 type kemTest768 struct {
-	privateKey   [paramsSecretKeyBytesK3]byte
-	publicKey    [paramsPublicKeyBytesK3]byte
-	ciphertext   [paramsIndcpaBytesK3]byte
-	sharedSecret [paramsSSBytes]byte
+	privateKey   [Kyber768SKBytes]byte
+	publicKey    [Kyber768PKBytes]byte
+	ciphertext   [Kyber768CTBytes]byte
+	sharedSecret [KyberSSBytes]byte
 }
 
 type kemTest1024 struct {
-	privateKey   [paramsSecretKeyBytesK4]byte
-	publicKey    [paramsPublicKeyBytesK4]byte
-	ciphertext   [paramsIndcpaBytesK4]byte
-	sharedSecret [paramsSSBytes]byte
+	privateKey   [Kyber1024SKBytes]byte
+	publicKey    [Kyber1024PKBytes]byte
+	ciphertext   [Kyber1024CTBytes]byte
+	sharedSecret [KyberSSBytes]byte
 }
 
 var kemTests512, kemTests768, kemTests1024 = func() ([100]kemTest512, [100]kemTest768, [100]kemTest1024) {
@@ -74,10 +74,10 @@ var kemTests512, kemTests768, kemTests1024 = func() ([100]kemTest512, [100]kemTe
 		for i := 0; i < len(allPk); i++ {
 			switch r {
 			case 0:
-				var privateKey [paramsSecretKeyBytesK2]byte
-				var publicKey [paramsPublicKeyBytesK2]byte
-				var ciphertext [paramsIndcpaBytesK2]byte
-				var sharedSecret [paramsSSBytes]byte
+				var privateKey [Kyber512SKBytes]byte
+				var publicKey [Kyber512PKBytes]byte
+				var ciphertext [Kyber512CTBytes]byte
+				var sharedSecret [KyberSSBytes]byte
 				sk, err := hex.DecodeString(strings.TrimSuffix(allSk[i][5:], "\n"))
 				if err != nil {
 					log.Fatal(err)
@@ -105,10 +105,10 @@ var kemTests512, kemTests768, kemTests1024 = func() ([100]kemTest512, [100]kemTe
 					sharedSecret: sharedSecret,
 				}
 			case 1:
-				var privateKey [paramsSecretKeyBytesK3]byte
-				var publicKey [paramsPublicKeyBytesK3]byte
-				var ciphertext [paramsIndcpaBytesK3]byte
-				var sharedSecret [paramsSSBytes]byte
+				var privateKey [Kyber768SKBytes]byte
+				var publicKey [Kyber768PKBytes]byte
+				var ciphertext [Kyber768CTBytes]byte
+				var sharedSecret [KyberSSBytes]byte
 				sk, err := hex.DecodeString(strings.TrimSuffix(allSk[i][5:], "\n"))
 				if err != nil {
 					log.Fatal(err)
@@ -136,10 +136,10 @@ var kemTests512, kemTests768, kemTests1024 = func() ([100]kemTest512, [100]kemTe
 					sharedSecret: sharedSecret,
 				}
 			case 2:
-				var privateKey [paramsSecretKeyBytesK4]byte
-				var publicKey [paramsPublicKeyBytesK4]byte
-				var ciphertext [paramsIndcpaBytesK4]byte
-				var sharedSecret [paramsSSBytes]byte
+				var privateKey [Kyber1024SKBytes]byte
+				var publicKey [Kyber1024PKBytes]byte
+				var ciphertext [Kyber1024CTBytes]byte
+				var sharedSecret [KyberSSBytes]byte
 				sk, err := hex.DecodeString(strings.TrimSuffix(allSk[i][5:], "\n"))
 				if err != nil {
 					log.Fatal(err)
