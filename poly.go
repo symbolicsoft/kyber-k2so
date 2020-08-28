@@ -171,7 +171,7 @@ func polyGetNoise(seed []byte, nonce byte) poly {
 // a polynomial in-place; the input is assumed to be in normal order,
 // while the output is in bit-reversed order.
 func polyNtt(r poly) poly {
-	return polyReduce(ntt(r))
+	return ntt(r)
 }
 
 // polyInvNttToMont computes the inverse of a negacyclic number-theoretic

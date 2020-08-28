@@ -176,6 +176,7 @@ func indcpaKeypair(paramsK int) ([]byte, []byte, error) {
 		nonce = nonce + 1
 	}
 	polyvecNtt(skpv, paramsK)
+	polyvecReduce(skpv, paramsK)
 	polyvecNtt(e, paramsK)
 	for i := 0; i < paramsK; i++ {
 		pkpv[i] = polyToMont(polyvecPointWiseAccMontgomery(a[i], skpv, paramsK))
@@ -203,6 +204,7 @@ func indcpaEncrypt(m []byte, publicKey []byte, coins []byte, paramsK int) ([]byt
 	}
 	epp := polyGetNoise(coins, byte(paramsK*2))
 	polyvecNtt(sp, paramsK)
+	polyvecReduce(sp, paramsK)
 	for i := 0; i < paramsK; i++ {
 		bp[i] = polyvecPointWiseAccMontgomery(at[i], sp, paramsK)
 	}
