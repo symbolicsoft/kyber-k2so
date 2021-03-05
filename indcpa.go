@@ -203,12 +203,18 @@ func indcpaKeypair(paramsK int) ([]byte, []byte, error) {
 		return []byte{}, []byte{}, err
 	}
 	var nonce byte
+
+	// increase noise distribution for kyber-512 (version 3 update)
+	eta1 := paramsETA
+	if paramsK == 2 { // if kyber-512
+		eta1 = 3 // set eta1 to 3
+	}
 	for i := 0; i < paramsK; i++ {
-		skpv[i] = polyGetNoise(noiseSeed, nonce)
+		skpv[i] = polyGetNoise(noiseSeed, nonce, eta1)
 		nonce = nonce + 1
 	}
 	for i := 0; i < paramsK; i++ {
-		e[i] = polyGetNoise(noiseSeed, nonce)
+		e[i] = polyGetNoise(noiseSeed, nonce, eta1)
 		nonce = nonce + 1
 	}
 	polyvecNtt(skpv, paramsK)
@@ -234,11 +240,19 @@ func indcpaEncrypt(m []byte, publicKey []byte, coins []byte, paramsK int) ([]byt
 	if err != nil {
 		return []byte{}, err
 	}
-	for i := 0; i < paramsK; i++ {
-		sp[i] = polyGetNoise(coins, byte(i))
-		ep[i] = polyGetNoise(coins, byte(i+paramsK))
+
+	// increase noise distribution for kyber-512 (version 3 update)
+	eta1 := paramsETA
+	eta2 := paramsETA
+	if paramsK == 2 { // if kyber-512
+		eta1 = 3 // set eta1 to 3
 	}
-	epp := polyGetNoise(coins, byte(paramsK*2))
+
+	for i := 0; i < paramsK; i++ {
+		sp[i] = polyGetNoise(coins, byte(i), eta1)
+		ep[i] = polyGetNoise(coins, byte(i+paramsK), eta2)
+	}
+	epp := polyGetNoise(coins, byte(paramsK*2), eta2)
 	polyvecNtt(sp, paramsK)
 	polyvecReduce(sp, paramsK)
 	for i := 0; i < paramsK; i++ {

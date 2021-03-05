@@ -14,9 +14,9 @@ func byteopsLoad32(x []byte) uint32 {
 }
 
 // byteopsCbd computers a polynomial with coefficients distributed
-// according to a centered binomial distribution with parameter paramsETA,
+// according to a centered binomial distribution with parameter eta,
 // given an array of uniformly random bytes.
-func byteopsCbd(buf []byte) poly {
+func byteopsCbd(buf []byte, eta int) poly {
 	var t, d uint32
 	var a, b int16
 	var r poly
@@ -26,7 +26,7 @@ func byteopsCbd(buf []byte) poly {
 		d = d + ((t >> 1) & 0x55555555)
 		for j := 0; j < 8; j++ {
 			a = int16((d >> (4*j + 0)) & 0x3)
-			b = int16((d >> (4*j + paramsETA)) & 0x3)
+			b = int16((d >> (4*j + eta)) & 0x3)
 			r[8*i+j] = a - b
 		}
 	}
