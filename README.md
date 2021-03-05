@@ -16,10 +16,10 @@ Keeping in mind the Security Disclaimer above, Kyber-K2SO appears to be appropri
 
 ## Features
 
-* 🟢 **Small, easy to read code.** Kyber-K2SO is to our knowledge the smallest implementation of Kyber Version 2.
-* 🟢 **Simple API.** `KemKeypair768()` to generate a private key and a public key, `KemEncrypt768(publicKey)` generate and encrypt a shared secret, and `KemDecrypt768(ciphertext, privateKey)` to decrypt the shared secret. Aside from Kyber-768, Kyber-512 and Kyber-1024 are also offered.
-* 🟢 **Good performance.** Kyber-K2SO is more than fast enough for regular usage in any environment supported by the Go programming language.
-* 🟢 **Constant time (probably).** As far as we can tell, decryption appears to perform in constant time. Further analysis is encouraged.
+* **Small, easy to read code.** Kyber-K2SO is to our knowledge the smallest implementation of Kyber Version 3.
+* **Simple API.** `KemKeypair768()` to generate a private key and a public key, `KemEncrypt768(publicKey)` generate and encrypt a shared secret, and `KemDecrypt768(ciphertext, privateKey)` to decrypt the shared secret. Aside from Kyber-768, Kyber-512 and Kyber-1024 are also offered.
+* **Good performance.** Kyber-K2SO is more than fast enough for regular usage in any environment supported by the Go programming language.
+* **Constant time (probably).** As far as we can tell, decryption appears to perform in constant time. Further analysis is encouraged.
 
 ## Using Kyber-K2SO
 ```bash
@@ -86,4 +86,6 @@ ok  	github.com/symbolicsoft/kyber-k2so	16.180s
 Kyber-K2SO is published by [Symbolic Software](https://symbolic.software) under the MIT License. It is written by [Nadim Kobeissi](https://nadim.computer).
 
 We thank [Peter Schwabe](https://cryptojedi.org/peter) for his feedback during the development of this implementation.
+
+Version 3 updates made by [Anton Tutoveanu](https://github.com/antontutoveanu).
 
