@@ -148,8 +148,8 @@ func indcpaGenMatrix(seed []byte, transposed bool, paramsK int) ([]polyvec, erro
 				// run sampling function again
 				missing, ctrn := indcpaRejUniform(buf[504:672], 168, paramsN-ctr)
 
-				for k := ctr; k < paramsN-ctr; k++ {
-					r[i][j][k] = missing[paramsN-ctr+k]
+				for k := ctr; k < paramsN; k++ {
+					r[i][j][k] = missing[k-ctr]
 				}
 				ctr = ctr + ctrn // update index
 			}

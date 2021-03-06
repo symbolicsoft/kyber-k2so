@@ -12,20 +12,7 @@ func polyCompress(a poly, paramsK int) []byte {
 	a = polyCSubQ(a)
 	rr := 0
 	switch paramsK {
-	case 2:
-		r := make([]byte, paramsPolyCompressedBytesK512) // 128
-		for i := 0; i < paramsN/8; i++ {
-			for j := 0; j < 8; j++ {
-				t[j] = byte(((uint16(a[8*i+j])<<4)+uint16(paramsQ/2))/uint16(paramsQ)) & 15
-			}
-			r[rr+0] = t[0] | (t[1] << 4)
-			r[rr+1] = t[2] | (t[3] << 4)
-			r[rr+2] = t[4] | (t[5] << 4)
-			r[rr+3] = t[6] | (t[7] << 4)
-			rr = rr + 4
-		}
-		return r
-	case 3:
+	case 2, 3:
 		r := make([]byte, paramsPolyCompressedBytesK768) // 128
 		for i := 0; i < paramsN/8; i++ {
 			for j := 0; j < 8; j++ {
@@ -64,13 +51,7 @@ func polyDecompress(a []byte, paramsK int) poly {
 	t := make([]byte, 8)
 	aa := 0
 	switch paramsK {
-	case 2:
-		for i := 0; i < paramsN/2; i++ {
-			r[2*i+0] = int16(((uint16(a[aa]&15) * uint16(paramsQ)) + 8) >> 4)
-			r[2*i+1] = int16(((uint16(a[aa]>>4) * uint16(paramsQ)) + 8) >> 4)
-			aa = aa + 1
-		}
-	case 3:
+	case 2, 3:
 		for i := 0; i < paramsN/2; i++ {
 			r[2*i+0] = int16(((uint16(a[aa]&15) * uint16(paramsQ)) + 8) >> 4)
 			r[2*i+1] = int16(((uint16(a[aa]>>4) * uint16(paramsQ)) + 8) >> 4)
