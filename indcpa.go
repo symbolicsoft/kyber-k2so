@@ -115,12 +115,14 @@ func indcpaGenMatrix(seed []byte, transposed bool, paramsK int) ([]polyvec, erro
 
 	// make 3x3 polynomial matrix
 	r := make([]polyvec, paramsK)
-	// make buffer for byte array, 504 length
-	buf := make([]byte, 504)
+	// make buffer for byte array, 506 length
+	buf := make([]byte, 506)
 	// initialise xof
 	xof := sha3.NewShake128()
 	// keeps track of how many polynomial coefficients have been sampled
 	ctr := 0
+	// offset
+	off := 0
 
 	// for each matrix entry
 	for i := 0; i < paramsK; i++ {
@@ -134,7 +136,7 @@ func indcpaGenMatrix(seed []byte, transposed bool, paramsK int) ([]polyvec, erro
 			}
 
 			// obtain xof of (seed+i+j) or (seed+j+i) depending on above code
-			// output is 504 bytes in length
+			// output is 506 bytes in length
 			xof.Reset()
 			_, err := xof.Write(append(seed, transposon...))
 			if err != nil {
@@ -150,14 +152,20 @@ func indcpaGenMatrix(seed []byte, transposed bool, paramsK int) ([]polyvec, erro
 
 			// if the polynomial hasnt been filled yet with mod q entries
 			for ctr < paramsN {
-				// take first 168 bytes of byte array from xof
+				off = len(buf) % 3
+
 				bufn := make([]byte, 168)
-				_, err = xof.Read(bufn)
+
+				for k := 0; k < off; k++ {
+					buf[k] = buf[len(buf)-off+k]
+				}
+
+				_, err = xof.Read(bufn[off:])
 				if err != nil {
 					return []polyvec{}, err
 				}
 				// run sampling function again
-				missing, ctrn := indcpaRejUniform(bufn, 168)
+				missing, ctrn := indcpaRejUniform(buf, 168)
 
 				// starting at last position of output array from first sampling function until 256 is reached
 				for k := ctr; k < paramsN-ctr; k++ {
