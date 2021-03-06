@@ -152,13 +152,8 @@ func indcpaGenMatrix(seed []byte, transposed bool, paramsK int) ([]polyvec, erro
 
 			// if the polynomial hasnt been filled yet with mod q entries
 			for ctr < paramsN {
-				off = len(buf) % 3
 
 				bufn := make([]byte, 168)
-
-				for k := 0; k < off; k++ {
-					buf[k] = buf[len(buf)-off+k]
-				}
 
 				_, err = xof.Read(bufn[off:])
 				if err != nil {
@@ -167,9 +162,8 @@ func indcpaGenMatrix(seed []byte, transposed bool, paramsK int) ([]polyvec, erro
 				// run sampling function again
 				missing, ctrn := indcpaRejUniform(buf, 168)
 
-				// starting at last position of output array from first sampling function until 256 is reached
 				for k := ctr; k < paramsN-ctr; k++ {
-					r[i][j][k] = missing[k-ctr] // fill rest of array with the additional coefficients until full
+					r[i][j][k] = missing[paramsN-ctr+k]
 				}
 				ctr = ctr + ctrn // update index
 			}
