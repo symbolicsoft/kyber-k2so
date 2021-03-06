@@ -75,20 +75,21 @@ func indcpaUnpackCiphertext(c []byte, paramsK int) (polyvec, poly) {
 
 // indcpaRejUniform runs rejection sampling on uniform random bytes
 // to generate uniform random integers modulo `Q`.
-func indcpaRejUniform(buf []byte, bufl int) (poly, int) {
+func indcpaRejUniform(buf []byte, bufl int, len int) (poly, int) {
 	var r poly
 	var val0 uint16 // d1 in kyber documentation
 	var val1 uint16 // d2 in kyber documentation
 	ctr := 0        // i
 	pos := 0        // j
 
-	// while less than 256 (the length of the output array: a(i,j))
-	// and if there's still elements in the input buffer left
-	for ctr < paramsN && pos+3 <= bufl {
+	for ctr < len && pos+3 <= bufl {
 
 		// compute d1 and d2
 		val0 = (uint16((buf[pos])>>0) | (uint16(buf[pos+1]) << 8)) & 0xFFF
 		val1 = (uint16((buf[pos+1])>>4) | (uint16(buf[pos+2]) << 4)) & 0xFFF
+
+		// increment input buffer index by 3
+		pos = pos + 3
 
 		// if d1 is less than 3329
 		if val0 < uint16(paramsQ) {
@@ -97,13 +98,11 @@ func indcpaRejUniform(buf []byte, bufl int) (poly, int) {
 			// increment position of output array
 			ctr = ctr + 1
 		}
-		if ctr < paramsN && val1 < uint16(paramsQ) {
+		if ctr < len && val1 < uint16(paramsQ) {
 			r[ctr] = int16(val1)
 			ctr = ctr + 1
 		}
 
-		// increment input buffer index by 3
-		pos = pos + 3
 	}
 	return r, ctr
 }
@@ -113,18 +112,12 @@ func indcpaRejUniform(buf []byte, bufl int) (poly, int) {
 // Performs rejection sampling on the output of an extendable-output function (XOF).
 func indcpaGenMatrix(seed []byte, transposed bool, paramsK int) ([]polyvec, error) {
 
-	// make 3x3 polynomial matrix
 	r := make([]polyvec, paramsK)
-	// make buffer for byte array, 506 length
-	buf := make([]byte, 506)
-	// initialise xof
+	buf := make([]byte, 672)
 	xof := sha3.NewShake128()
 	// keeps track of how many polynomial coefficients have been sampled
 	ctr := 0
-	// offset
-	off := 0
 
-	// for each matrix entry
 	for i := 0; i < paramsK; i++ {
 		r[i] = polyvecNew(paramsK)
 		for j := 0; j < paramsK; j++ {
@@ -136,7 +129,6 @@ func indcpaGenMatrix(seed []byte, transposed bool, paramsK int) ([]polyvec, erro
 			}
 
 			// obtain xof of (seed+i+j) or (seed+j+i) depending on above code
-			// output is 506 bytes in length
 			xof.Reset()
 			_, err := xof.Write(append(seed, transposon...))
 			if err != nil {
@@ -148,19 +140,13 @@ func indcpaGenMatrix(seed []byte, transposed bool, paramsK int) ([]polyvec, erro
 			}
 
 			// run rejection sampling on the output from above
-			r[i][j], ctr = indcpaRejUniform(buf, len(buf))
+			r[i][j], ctr = indcpaRejUniform(buf[:504], 504, paramsN)
 
 			// if the polynomial hasnt been filled yet with mod q entries
 			for ctr < paramsN {
 
-				bufn := make([]byte, 168)
-
-				_, err = xof.Read(bufn[off:])
-				if err != nil {
-					return []polyvec{}, err
-				}
 				// run sampling function again
-				missing, ctrn := indcpaRejUniform(buf, 168)
+				missing, ctrn := indcpaRejUniform(buf[504:672], 168, paramsN-ctr)
 
 				for k := ctr; k < paramsN-ctr; k++ {
 					r[i][j][k] = missing[paramsN-ctr+k]
