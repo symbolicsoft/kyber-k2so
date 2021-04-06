@@ -75,62 +75,46 @@ func indcpaUnpackCiphertext(c []byte, paramsK int) (polyvec, poly) {
 
 // indcpaRejUniform runs rejection sampling on uniform random bytes
 // to generate uniform random integers modulo `Q`.
-func indcpaRejUniform(buf []byte, bufl int, len int) (poly, int) {
+func indcpaRejUniform(buf []byte, bufl int, l int) (poly, int) {
 	var r poly
-	var val0 uint16 // d1 in kyber documentation
-	var val1 uint16 // d2 in kyber documentation
-	ctr := 0        // i
-	pos := 0        // j
-
-	for ctr < len && pos+3 <= bufl {
-
-		// compute d1 and d2
-		val0 = (uint16((buf[pos])>>0) | (uint16(buf[pos+1]) << 8)) & 0xFFF
-		val1 = (uint16((buf[pos+1])>>4) | (uint16(buf[pos+2]) << 4)) & 0xFFF
-
-		// increment input buffer index by 3
-		pos = pos + 3
-
-		// if d1 is less than 3329
-		if val0 < uint16(paramsQ) {
-			// assign to d1
-			r[ctr] = int16(val0)
-			// increment position of output array
-			ctr = ctr + 1
+	var d1 uint16
+	var d2 uint16
+	i := 0
+	j := 0
+	for i < l && j+3 <= bufl {
+		d1 = (uint16((buf[j])>>0) | (uint16(buf[j+1]) << 8)) & 0xFFF
+		d2 = (uint16((buf[j+1])>>4) | (uint16(buf[j+2]) << 4)) & 0xFFF
+		j = j + 3
+		if d1 < uint16(paramsQ) {
+			r[i] = int16(d1)
+			i = i + 1
 		}
-		if ctr < len && val1 < uint16(paramsQ) {
-			r[ctr] = int16(val1)
-			ctr = ctr + 1
+		if i < l && d2 < uint16(paramsQ) {
+			r[i] = int16(d2)
+			i = i + 1
 		}
-
 	}
-	return r, ctr
+	return r, i
 }
 
 // indcpaGenMatrix deterministically generates a matrix `A` (or the transpose of `A`)
 // from a seed. Entries of the matrix are polynomials that look uniformly random.
 // Performs rejection sampling on the output of an extendable-output function (XOF).
 func indcpaGenMatrix(seed []byte, transposed bool, paramsK int) ([]polyvec, error) {
-
 	r := make([]polyvec, paramsK)
 	buf := make([]byte, 672)
 	xof := sha3.NewShake128()
-	// keeps track of how many polynomial coefficients have been sampled
 	ctr := 0
-
 	for i := 0; i < paramsK; i++ {
 		r[i] = polyvecNew(paramsK)
 		for j := 0; j < paramsK; j++ {
-
-			// set if transposed matrix or not
-			transposon := []byte{byte(j), byte(i)}
-			if transposed {
-				transposon = []byte{byte(i), byte(j)}
-			}
-
-			// obtain xof of (seed+i+j) or (seed+j+i) depending on above code
 			xof.Reset()
-			_, err := xof.Write(append(seed, transposon...))
+			var err error
+			if transposed {
+				_, err = xof.Write(append(seed, []byte{byte(i), byte(j)}...))
+			} else {
+				_, err = xof.Write(append(seed, []byte{byte(j), byte(i)}...))
+			}
 			if err != nil {
 				return []polyvec{}, err
 			}
@@ -138,20 +122,13 @@ func indcpaGenMatrix(seed []byte, transposed bool, paramsK int) ([]polyvec, erro
 			if err != nil {
 				return []polyvec{}, err
 			}
-
-			// run rejection sampling on the output from above
 			r[i][j], ctr = indcpaRejUniform(buf[:504], 504, paramsN)
-
-			// if the polynomial hasnt been filled yet with mod q entries
 			for ctr < paramsN {
-
-				// run sampling function again
 				missing, ctrn := indcpaRejUniform(buf[504:672], 168, paramsN-ctr)
-
 				for k := ctr; k < paramsN; k++ {
 					r[i][j][k] = missing[k-ctr]
 				}
-				ctr = ctr + ctrn // update index
+				ctr = ctr + ctrn
 			}
 		}
 	}
@@ -191,18 +168,12 @@ func indcpaKeypair(paramsK int) ([]byte, []byte, error) {
 		return []byte{}, []byte{}, err
 	}
 	var nonce byte
-
-	// increase noise distribution for kyber-512 (version 3 update)
-	eta1 := paramsETA
-	if paramsK == 2 { // if kyber-512
-		eta1 = 3 // set eta1 to 3
-	}
 	for i := 0; i < paramsK; i++ {
-		skpv[i] = polyGetNoise(noiseSeed, nonce, eta1)
+		skpv[i] = polyGetNoise(noiseSeed, nonce, paramsK)
 		nonce = nonce + 1
 	}
 	for i := 0; i < paramsK; i++ {
-		e[i] = polyGetNoise(noiseSeed, nonce, eta1)
+		e[i] = polyGetNoise(noiseSeed, nonce, paramsK)
 		nonce = nonce + 1
 	}
 	polyvecNtt(skpv, paramsK)
@@ -228,19 +199,11 @@ func indcpaEncrypt(m []byte, publicKey []byte, coins []byte, paramsK int) ([]byt
 	if err != nil {
 		return []byte{}, err
 	}
-
-	// increase noise distribution for kyber-512 (version 3 update)
-	eta1 := paramsETA
-	eta2 := paramsETA
-	if paramsK == 2 { // if kyber-512
-		eta1 = 3 // set eta1 to 3
-	}
-
 	for i := 0; i < paramsK; i++ {
-		sp[i] = polyGetNoise(coins, byte(i), eta1)
-		ep[i] = polyGetNoise(coins, byte(i+paramsK), eta2)
+		sp[i] = polyGetNoise(coins, byte(i), paramsK)
+		ep[i] = polyGetNoise(coins, byte(i+paramsK), 3)
 	}
-	epp := polyGetNoise(coins, byte(paramsK*2), eta2)
+	epp := polyGetNoise(coins, byte(paramsK*2), 3)
 	polyvecNtt(sp, paramsK)
 	polyvecReduce(sp, paramsK)
 	for i := 0; i < paramsK; i++ {

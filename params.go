@@ -6,9 +6,10 @@ package kyberk2so
 const paramsN int = 256
 const paramsQ int = 3329
 const paramsQinv int = 62209
-const paramsETA int = 2
 const paramsSymBytes int = 32
 const paramsPolyBytes int = 384
+const paramsETAK512 int = 3
+const paramsETAK768K1024 int = 2
 const paramsPolyvecBytesK512 int = 2 * paramsPolyBytes
 const paramsPolyvecBytesK768 int = 3 * paramsPolyBytes
 const paramsPolyvecBytesK1024 int = 4 * paramsPolyBytes

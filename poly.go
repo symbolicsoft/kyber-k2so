@@ -133,11 +133,18 @@ func polyToMsg(a poly) []byte {
 
 // polyGetNoise samples a polynomial deterministically from a seed
 // and nonce, with the output polynomial being close to a centered
-// binomial distribution with parameter paramsETA = 2 or 3
-func polyGetNoise(seed []byte, nonce byte, eta int) poly {
-	l := eta * paramsN / 4
-	p := indcpaPrf(l, seed, nonce)
-	return byteopsCbd(p, eta)
+// binomial distribution.
+func polyGetNoise(seed []byte, nonce byte, paramsK int) poly {
+	switch paramsK {
+	case 2:
+		l := paramsETAK512 * paramsN / 4
+		p := indcpaPrf(l, seed, nonce)
+		return byteopsCbd(p, paramsK)
+	default:
+		l := paramsETAK768K1024 * paramsN / 4
+		p := indcpaPrf(l, seed, nonce)
+		return byteopsCbd(p, paramsK)
+	}
 }
 
 // polyNtt computes a negacyclic number-theoretic transform (NTT) of

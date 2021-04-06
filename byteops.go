@@ -25,33 +25,32 @@ func byteopsLoad24(x []byte) uint32 {
 // byteopsCbd computers a polynomial with coefficients distributed
 // according to a centered binomial distribution with parameter eta,
 // given an array of uniformly random bytes.
-func byteopsCbd(buf []byte, eta int) poly {
+func byteopsCbd(buf []byte, paramsK int) poly {
 	var t, d uint32
 	var a, b int16
 	var r poly
-
-	if eta == 2 {
+	switch paramsK {
+	case 2:
+		for i := 0; i < paramsN/4; i++ {
+			t = byteopsLoad24(buf[3*i:])
+			d = t & 0x00249249
+			d = d + ((t >> 1) & 0x00249249)
+			d = d + ((t >> 2) & 0x00249249)
+			for j := 0; j < 4; j++ {
+				a = int16((d >> (6*j + 0)) & 0x7)
+				b = int16((d >> (6*j + paramsETAK512)) & 0x7)
+				r[4*i+j] = a - b
+			}
+		}
+	default:
 		for i := 0; i < paramsN/8; i++ {
 			t = byteopsLoad32(buf[4*i:])
 			d = t & 0x55555555
 			d = d + ((t >> 1) & 0x55555555)
 			for j := 0; j < 8; j++ {
 				a = int16((d >> (4*j + 0)) & 0x3)
-				b = int16((d >> (4*j + eta)) & 0x3)
+				b = int16((d >> (4*j + paramsETAK768K1024)) & 0x3)
 				r[8*i+j] = a - b
-			}
-		}
-	} else {
-		for i := 0; i < paramsN/4; i++ {
-			t = byteopsLoad24(buf[3*i:])
-			d = t & 0x00249249
-			d = d + ((t >> 1) & 0x00249249)
-			d = d + ((t >> 2) & 0x00249249)
-
-			for j := 0; j < 4; j++ {
-				a = int16((d >> (6*j + 0)) & 0x7)
-				b = int16((d >> (6*j + eta)) & 0x7)
-				r[4*i+j] = a - b
 			}
 		}
 	}
