@@ -92,6 +92,6 @@ ok  	github.com/symbolicsoft/kyber-k2so	16.180s
 
 Kyber-K2SO is published by [Symbolic Software](https://symbolic.software) under the MIT License.
 
-Kyber-K2SO originally implemented Kyber version 2. Kyber-K2SO was subsequently updated to implement Kyber version 3 thanks to work contributed by [Anton Tutoveanu](https://github.com/antontutoveanu) in March 2021.
+Kyber-K2SO originally implemented Kyber version 2. Kyber-K2SO was subsequently updated in version 0.1.0 to implement Kyber version 3 thanks to work contributed by [Anton Tutoveanu](https://github.com/antontutoveanu) in March 2021.
 
 We thank [Peter Schwabe](https://cryptojedi.org/peter) for his feedback during the development of this implementation.
