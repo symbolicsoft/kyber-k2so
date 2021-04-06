@@ -12,20 +12,8 @@ func polyCompress(a poly, paramsK int) []byte {
 	a = polyCSubQ(a)
 	rr := 0
 	switch paramsK {
-	case 2:
-		r := make([]byte, paramsPolyCompressedBytesK512)
-		for i := 0; i < paramsN/8; i++ {
-			for j := 0; j < 8; j++ {
-				t[j] = byte(((uint16(a[8*i+j])<<3)+uint16(paramsQ)/2)/uint16(paramsQ)) & 7
-			}
-			r[rr+0] = (t[0] >> 0) | (t[1] << 3) | (t[2] << 6)
-			r[rr+1] = (t[2] >> 2) | (t[3] << 1) | (t[4] << 4) | (t[5] << 7)
-			r[rr+2] = (t[5] >> 1) | (t[6] << 2) | (t[7] << 5)
-			rr = rr + 3
-		}
-		return r
-	case 3:
-		r := make([]byte, paramsPolyCompressedBytesK768)
+	case 2, 3:
+		r := make([]byte, paramsPolyCompressedBytesK768) // 128
 		for i := 0; i < paramsN/8; i++ {
 			for j := 0; j < 8; j++ {
 				t[j] = byte(((uint16(a[8*i+j])<<4)+uint16(paramsQ/2))/uint16(paramsQ)) & 15
@@ -38,7 +26,7 @@ func polyCompress(a poly, paramsK int) []byte {
 		}
 		return r
 	default:
-		r := make([]byte, paramsPolyCompressedBytesK1024)
+		r := make([]byte, paramsPolyCompressedBytesK1024) // 160
 		for i := 0; i < paramsN/8; i++ {
 			for j := 0; j < 8; j++ {
 				t[j] = byte(((uint32(a[8*i+j])<<5)+uint32(paramsQ/2))/uint32(paramsQ)) & 31
@@ -63,22 +51,7 @@ func polyDecompress(a []byte, paramsK int) poly {
 	t := make([]byte, 8)
 	aa := 0
 	switch paramsK {
-	case 2:
-		for i := 0; i < paramsN/8; i++ {
-			t[0] = (a[aa+0] >> 0)
-			t[1] = (a[aa+0] >> 3)
-			t[2] = (a[aa+0] >> 6) | (a[aa+1] << 2)
-			t[3] = (a[aa+1] >> 1)
-			t[4] = (a[aa+1] >> 4)
-			t[5] = (a[aa+1] >> 7) | (a[aa+2] << 1)
-			t[6] = (a[aa+2] >> 2)
-			t[7] = (a[aa+2] >> 5)
-			aa = aa + 3
-			for j := 0; j < 8; j++ {
-				r[8*i+j] = int16(((uint32(t[j]&7) * uint32(paramsQ)) + 4) >> 3)
-			}
-		}
-	case 3:
+	case 2, 3:
 		for i := 0; i < paramsN/2; i++ {
 			r[2*i+0] = int16(((uint16(a[aa]&15) * uint16(paramsQ)) + 8) >> 4)
 			r[2*i+1] = int16(((uint16(a[aa]>>4) * uint16(paramsQ)) + 8) >> 4)
@@ -160,11 +133,11 @@ func polyToMsg(a poly) []byte {
 
 // polyGetNoise samples a polynomial deterministically from a seed
 // and nonce, with the output polynomial being close to a centered
-// binomial distribution with parameter paramsETA = 2.
-func polyGetNoise(seed []byte, nonce byte) poly {
-	l := paramsETA * paramsN / 4
+// binomial distribution with parameter paramsETA = 2 or 3
+func polyGetNoise(seed []byte, nonce byte, eta int) poly {
+	l := eta * paramsN / 4
 	p := indcpaPrf(l, seed, nonce)
-	return byteopsCbd(p)
+	return byteopsCbd(p, eta)
 }
 
 // polyNtt computes a negacyclic number-theoretic transform (NTT) of
