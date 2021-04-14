@@ -190,7 +190,7 @@ func KemDecrypt512(
 	ski := Kyber512SKBytes - 2*paramsSymBytes
 	kr := sha3.Sum512(append(buf, privateKey[ski:ski+paramsSymBytes]...))
 	cmp, err := indcpaEncrypt(buf, publicKey, kr[paramsSymBytes:], paramsK)
-	fail := byte(1 - subtle.ConstantTimeCompare(ciphertext[:], cmp))
+	fail := byte(subtle.ConstantTimeCompare(ciphertext[:], cmp) - 1)
 	krh := sha3.Sum256(ciphertext[:])
 	for i := 0; i < paramsSymBytes; i++ {
 		skx := privateKey[:Kyber512SKBytes-paramsSymBytes+i]
@@ -219,7 +219,7 @@ func KemDecrypt768(
 	ski := Kyber768SKBytes - 2*paramsSymBytes
 	kr := sha3.Sum512(append(buf, privateKey[ski:ski+paramsSymBytes]...))
 	cmp, err := indcpaEncrypt(buf, publicKey, kr[paramsSymBytes:], paramsK)
-	fail := byte(1 - subtle.ConstantTimeCompare(ciphertext[:], cmp))
+	fail := byte(subtle.ConstantTimeCompare(ciphertext[:], cmp) - 1)
 	krh := sha3.Sum256(ciphertext[:])
 	for i := 0; i < paramsSymBytes; i++ {
 		skx := privateKey[:Kyber768SKBytes-paramsSymBytes+i]
@@ -248,7 +248,7 @@ func KemDecrypt1024(
 	ski := Kyber1024SKBytes - 2*paramsSymBytes
 	kr := sha3.Sum512(append(buf, privateKey[ski:ski+paramsSymBytes]...))
 	cmp, err := indcpaEncrypt(buf, publicKey, kr[paramsSymBytes:], paramsK)
-	fail := byte(1 - subtle.ConstantTimeCompare(ciphertext[:], cmp))
+	fail := byte(subtle.ConstantTimeCompare(ciphertext[:], cmp) - 1)
 	krh := sha3.Sum256(ciphertext[:])
 	for i := 0; i < paramsSymBytes; i++ {
 		skx := privateKey[:Kyber1024SKBytes-paramsSymBytes+i]
