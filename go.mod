@@ -3,8 +3,9 @@
 
 module github.com/symbolicsoft/kyber-k2so
 
-go 1.16
+go 1.17
 
 require (
-	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
+	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e
+	golang.org/x/sys v0.0.0-20220614162138-6c1b26c55098 // indirect
 )
