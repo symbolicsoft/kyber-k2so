@@ -8,8 +8,6 @@ linters:
         - staticcheck
         - gosimple
         - gofmt
-        - structcheck
-        - varcheck
         - ineffassign
         - typecheck
         - depguard
@@ -28,8 +26,8 @@ linters:
         - unconvert
         - unparam
         - unused
-        - deadcode
         - errcheck
+        - unused
 
 linters-settings:
     gocritic:
