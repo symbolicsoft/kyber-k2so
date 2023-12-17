@@ -119,12 +119,13 @@ func polyFromMsg(msg []byte) poly {
 // and represents the inverse of polyFromMsg.
 func polyToMsg(a poly) []byte {
 	msg := make([]byte, paramsSymBytes)
-	var t uint16
+	var t uint32
 	a = polyCSubQ(a)
 	for i := 0; i < paramsN/8; i++ {
 		msg[i] = 0
 		for j := 0; j < 8; j++ {
-			t = (((uint16(a[8*i+j]) << 1) + uint16(paramsQ/2)) / uint16(paramsQ)) & 1
+			t = (uint32(a[8*i+j]) << 1) + paramsQDivBy2Ceil
+			t = ((t * paramsQPolyToMsg) >> 28) & 1
 			msg[i] |= byte(t << j)
 		}
 	}
