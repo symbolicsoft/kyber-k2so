@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: © 2020-2021 Nadim Kobeissi <nadim@symbolic.software>
+// SPDX-FileCopyrightText: © 2020-2024 Nadim Kobeissi <nadim@symbolic.software>
 // SPDX-License-Identifier: MIT
 
 module github.com/symbolicsoft/kyber-k2so

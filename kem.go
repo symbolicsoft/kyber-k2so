@@ -1,4 +1,4 @@
-/* SPDX-FileCopyrightText: © 2020-2021 Nadim Kobeissi <nadim@symbolic.software>
+/* SPDX-FileCopyrightText: © 2020-2024 Nadim Kobeissi <nadim@symbolic.software>
  * SPDX-License-Identifier: MIT */
 
 // Package kyberk2so provides a clean implementation of the Kyber IND-CCA2-secure
