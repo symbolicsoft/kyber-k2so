@@ -10,7 +10,6 @@ linters:
         - gofmt
         - ineffassign
         - typecheck
-        - depguard
         - dogsled
         - funlen
         - gochecknoinits
