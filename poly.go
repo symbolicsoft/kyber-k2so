@@ -124,8 +124,8 @@ func polyToMsg(a poly) []byte {
 	for i := 0; i < paramsN/8; i++ {
 		msg[i] = 0
 		for j := 0; j < 8; j++ {
-			t = ((uint32(a[8*i+j]) << 1) + uint32(paramsQ/2))
-			t = ((t * paramsQdiv) >> 28) & 1
+			t = (uint32(a[8*i+j]) << 1) + paramsQDivBy2Ceil
+			t = ((t * paramsQPolyToMsg) >> 28) & 1
 			msg[i] |= byte(t << j)
 		}
 	}

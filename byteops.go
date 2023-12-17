@@ -60,7 +60,7 @@ func byteopsCbd(buf []byte, paramsK int) poly {
 // byteopsMontgomeryReduce computes a Montgomery reduction; given
 // a 32-bit integer `a`, returns `a * R^-1 mod Q` where `R=2^16`.
 func byteopsMontgomeryReduce(a int32) int16 {
-	u := int16(a * int32(paramsQinv))
+	u := int16(a * int32(paramsQInv))
 	t := int32(u) * int32(paramsQ)
 	t = a - t
 	t >>= 16
