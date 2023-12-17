@@ -85,12 +85,7 @@ func nttBaseMul(
 	a0 int16, a1 int16,
 	b0 int16, b1 int16,
 	zeta int16,
-) [2]int16 {
-	var r [2]int16
-	r[0] = nttFqMul(a1, b1)
-	r[0] = nttFqMul(r[0], zeta)
-	r[0] = r[0] + nttFqMul(a0, b0)
-	r[1] = nttFqMul(a0, b1)
-	r[1] = r[1] + nttFqMul(a1, b0)
-	return r
+) (int16, int16) {
+	return nttFqMul(nttFqMul(a1, b1), zeta) + nttFqMul(a0, b0),
+		nttFqMul(a0, b1) + nttFqMul(a1, b0)
 }

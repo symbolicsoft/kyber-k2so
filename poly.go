@@ -166,20 +166,16 @@ func polyInvNttToMont(r poly) poly {
 // in the number-theoretic transform (NTT) domain.
 func polyBaseMulMontgomery(a poly, b poly) poly {
 	for i := 0; i < paramsN/4; i++ {
-		rx := nttBaseMul(
+		a[4*i+0], a[4*i+1] = nttBaseMul(
 			a[4*i+0], a[4*i+1],
 			b[4*i+0], b[4*i+1],
 			nttZetas[64+i],
 		)
-		ry := nttBaseMul(
+		a[4*i+2], a[4*i+3] = nttBaseMul(
 			a[4*i+2], a[4*i+3],
 			b[4*i+2], b[4*i+3],
 			-nttZetas[64+i],
 		)
-		a[4*i+0] = rx[0]
-		a[4*i+1] = rx[1]
-		a[4*i+2] = ry[0]
-		a[4*i+3] = ry[1]
 	}
 	return a
 }

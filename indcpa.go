@@ -111,11 +111,9 @@ func indcpaGenMatrix(seed []byte, transposed bool, paramsK int) ([]polyvec, erro
 			xof.Reset()
 			var err error
 			if transposed {
-				xof_buf := append(append(make([]byte, 0, len(seed)+2), seed...), byte(i), byte(j))
-				_, err = xof.Write(xof_buf)
+				_, err = xof.Write(append(seed, byte(i), byte(j)))
 			} else {
-				xof_buf := append(append(make([]byte, 0, len(seed)+2), seed...), byte(j), byte(i))
-				_, err = xof.Write(xof_buf)
+				_, err = xof.Write(append(seed, byte(j), byte(i)))
 			}
 			if err != nil {
 				return []polyvec{}, err
