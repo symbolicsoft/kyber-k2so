@@ -162,7 +162,10 @@ func indcpaKeypair(paramsK int) ([]byte, []byte, error) {
 	}
 	buf = buf[:0]
 	buf = h.Sum(buf)
-	publicSeed, noiseSeed := buf[:paramsSymBytes], buf[paramsSymBytes:]
+	publicSeed := make([]byte, paramsSymBytes)
+	noiseSeed := make([]byte, paramsSymBytes)
+	copy(publicSeed, buf[:paramsSymBytes])
+	copy(noiseSeed, buf[paramsSymBytes:])
 	a, err := indcpaGenMatrix(publicSeed, false, paramsK)
 	if err != nil {
 		return []byte{}, []byte{}, err
