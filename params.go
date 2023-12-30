@@ -7,6 +7,7 @@ const paramsN int = 256
 const paramsQ int = 3329
 const paramsQDivBy2Ceil uint32 = 1665
 const paramsQPolyToMsg uint32 = 80635
+const paramsQPolyToMsgDivBy2Ceil uint32 = 40318
 const paramsQInv int = 62209
 const paramsSymBytes int = 32
 const paramsPolyBytes int = 384
