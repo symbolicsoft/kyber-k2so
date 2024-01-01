@@ -6,8 +6,10 @@ package kyberk2so
 const paramsN int = 256
 const paramsQ int = 3329
 const paramsQDivBy2Ceil uint32 = 1665
-const paramsQPolyToMsg uint32 = 80635
-const paramsQPolyToMsgDivBy2Ceil uint32 = 40318
+const params2Pow28DivByQ uint32 = 80635
+const params2Pow27DivByQ uint32 = 40318
+const params2Pow31DivByQ uint64 = 645084
+const params2Pow32DivByQ uint64 = 1290167
 const paramsQInv int = 62209
 const paramsSymBytes int = 32
 const paramsPolyBytes int = 384

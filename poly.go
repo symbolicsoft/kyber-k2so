@@ -16,7 +16,7 @@ func polyCompress(a poly, paramsK int) []byte {
 		r := make([]byte, paramsPolyCompressedBytesK768) // 128
 		for i := 0; i < paramsN/8; i++ {
 			for j := 0; j < 8; j++ {
-				t[j] = byte((((uint32(a[8*i+j]) << 4) + paramsQDivBy2Ceil) * paramsQPolyToMsg) >> 28)
+				t[j] = byte((((uint32(a[8*i+j]) << 4) + paramsQDivBy2Ceil) * params2Pow28DivByQ) >> 28)
 			}
 			r[rr+0] = t[0] | (t[1] << 4)
 			r[rr+1] = t[2] | (t[3] << 4)
@@ -29,7 +29,7 @@ func polyCompress(a poly, paramsK int) []byte {
 		r := make([]byte, paramsPolyCompressedBytesK1024) // 160
 		for i := 0; i < paramsN/8; i++ {
 			for j := 0; j < 8; j++ {
-				t[j] = byte((((uint32(a[8*i+j]) << 5) + (paramsQDivBy2Ceil - 1)) * paramsQPolyToMsgDivBy2Ceil) >> 27)
+				t[j] = byte((((uint32(a[8*i+j]) << 5) + (paramsQDivBy2Ceil - 1)) * params2Pow27DivByQ) >> 27)
 			}
 			r[rr+0] = (t[0] >> 0) | (t[1] << 5)
 			r[rr+1] = (t[1] >> 3) | (t[2] << 2) | (t[3] << 7)
@@ -125,7 +125,7 @@ func polyToMsg(a poly) []byte {
 		msg[i] = 0
 		for j := 0; j < 8; j++ {
 			t = (uint32(a[8*i+j]) << 1) + paramsQDivBy2Ceil
-			t = ((t * paramsQPolyToMsg) >> 28) & 1
+			t = ((t * params2Pow28DivByQ) >> 28) & 1
 			msg[i] |= byte(t << j)
 		}
 	}
@@ -248,7 +248,7 @@ func polyvecCompress(a polyvec, paramsK int) []byte {
 		for i := 0; i < paramsK; i++ {
 			for j := 0; j < paramsN/4; j++ {
 				for k := 0; k < 4; k++ {
-					t[k] = uint16(((((uint64(a[i][4*j+k]) << 10) + uint64(paramsQDivBy2Ceil)) * 1290167) >> 32) & 0x3ff)
+					t[k] = uint16(((((uint64(a[i][4*j+k]) << 10) + uint64(paramsQDivBy2Ceil)) * params2Pow32DivByQ) >> 32) & 0x3ff)
 				}
 				r[rr+0] = byte(t[0] >> 0)
 				r[rr+1] = byte((t[0] >> 8) | (t[1] << 2))
@@ -264,7 +264,7 @@ func polyvecCompress(a polyvec, paramsK int) []byte {
 		for i := 0; i < paramsK; i++ {
 			for j := 0; j < paramsN/8; j++ {
 				for k := 0; k < 8; k++ {
-					t[k] = uint16(((((uint64(a[i][8*j+k]) << 11) + uint64(paramsQDivBy2Ceil-1)) * 645084) >> 31) & 0x7ff)
+					t[k] = uint16(((((uint64(a[i][8*j+k]) << 11) + uint64(paramsQDivBy2Ceil-1)) * params2Pow31DivByQ) >> 31) & 0x7ff)
 				}
 				r[rr+0] = byte((t[0] >> 0))
 				r[rr+1] = byte((t[0] >> 8) | (t[1] << 3))
