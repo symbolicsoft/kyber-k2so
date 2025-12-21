@@ -102,33 +102,37 @@ func indcpaRejUniform(buf []byte, bufl int, l int) (poly, int) {
 // Performs rejection sampling on the output of an extendable-output function (XOF).
 func indcpaGenMatrix(seed []byte, transposed bool, paramsK int) ([]polyvec, error) {
 	r := make([]polyvec, paramsK)
-	buf := make([]byte, 672)
+	var buf [672]byte
+	var xofInput [34]byte
+	copy(xofInput[:32], seed)
 	xof := sha3.NewShake128()
 	ctr := 0
 	for i := 0; i < paramsK; i++ {
 		r[i] = polyvecNew(paramsK)
 		for j := 0; j < paramsK; j++ {
 			xof.Reset()
-			var err error
 			if transposed {
-				_, err = xof.Write(append(seed, byte(i), byte(j)))
+				xofInput[32] = byte(i)
+				xofInput[33] = byte(j)
 			} else {
-				_, err = xof.Write(append(seed, byte(j), byte(i)))
+				xofInput[32] = byte(j)
+				xofInput[33] = byte(i)
 			}
+			_, err := xof.Write(xofInput[:])
 			if err != nil {
-				return []polyvec{}, err
+				return nil, err
 			}
-			_, err = xof.Read(buf)
+			_, err = xof.Read(buf[:])
 			if err != nil {
-				return []polyvec{}, err
+				return nil, err
 			}
 			r[i][j], ctr = indcpaRejUniform(buf[:504], 504, paramsN)
 			for ctr < paramsN {
-				missing, ctrn := indcpaRejUniform(buf[504:672], 168, paramsN-ctr)
+				missing, ctrn := indcpaRejUniform(buf[504:], 168, paramsN-ctr)
 				for k := ctr; k < paramsN; k++ {
 					r[i][j][k] = missing[k-ctr]
 				}
-				ctr = ctr + ctrn
+				ctr += ctrn
 			}
 		}
 	}
@@ -140,7 +144,10 @@ func indcpaGenMatrix(seed []byte, transposed bool, paramsK int) ([]polyvec, erro
 // to instantiate the PRF's underlying hash function.
 func indcpaPrf(l int, key []byte, nonce byte) []byte {
 	hash := make([]byte, l)
-	sha3.ShakeSum256(hash, append(key, nonce))
+	var prfInput [33]byte
+	copy(prfInput[:32], key)
+	prfInput[32] = nonce
+	sha3.ShakeSum256(hash, prfInput[:])
 	return hash
 }
 
@@ -150,34 +157,35 @@ func indcpaKeypair(paramsK int) ([]byte, []byte, error) {
 	skpv := polyvecNew(paramsK)
 	pkpv := polyvecNew(paramsK)
 	e := polyvecNew(paramsK)
-	buf := make([]byte, 2*paramsSymBytes)
+	var buf [64]byte
+	var hashInput [33]byte
 	h := sha3.New512()
-	_, err := rand.Read(buf[:paramsSymBytes])
+	_, err := rand.Read(hashInput[:paramsSymBytes])
 	if err != nil {
-		return []byte{}, []byte{}, err
+		return nil, nil, err
 	}
-	_, err = h.Write(append(buf[:paramsSymBytes], byte(paramsK)))
+	hashInput[32] = byte(paramsK)
+	_, err = h.Write(hashInput[:])
 	if err != nil {
-		return []byte{}, []byte{}, err
+		return nil, nil, err
 	}
-	buf = buf[:0]
-	buf = h.Sum(buf)
-	publicSeed := make([]byte, paramsSymBytes)
-	noiseSeed := make([]byte, paramsSymBytes)
-	copy(publicSeed, buf[:paramsSymBytes])
-	copy(noiseSeed, buf[paramsSymBytes:])
-	a, err := indcpaGenMatrix(publicSeed, false, paramsK)
+	h.Sum(buf[:0])
+	var publicSeed [paramsSymBytes]byte
+	var noiseSeed [paramsSymBytes]byte
+	copy(publicSeed[:], buf[:paramsSymBytes])
+	copy(noiseSeed[:], buf[paramsSymBytes:])
+	a, err := indcpaGenMatrix(publicSeed[:], false, paramsK)
 	if err != nil {
-		return []byte{}, []byte{}, err
+		return nil, nil, err
 	}
 	var nonce byte
 	for i := 0; i < paramsK; i++ {
-		skpv[i] = polyGetNoise(noiseSeed, nonce, paramsK)
-		nonce = nonce + 1
+		skpv[i] = polyGetNoise(noiseSeed[:], nonce, paramsK)
+		nonce++
 	}
 	for i := 0; i < paramsK; i++ {
-		e[i] = polyGetNoise(noiseSeed, nonce, paramsK)
-		nonce = nonce + 1
+		e[i] = polyGetNoise(noiseSeed[:], nonce, paramsK)
+		nonce++
 	}
 	polyvecNtt(skpv, paramsK)
 	polyvecReduce(skpv, paramsK)
@@ -187,7 +195,7 @@ func indcpaKeypair(paramsK int) ([]byte, []byte, error) {
 	}
 	polyvecAdd(pkpv, e, paramsK)
 	polyvecReduce(pkpv, paramsK)
-	return indcpaPackPrivateKey(skpv, paramsK), indcpaPackPublicKey(pkpv, publicSeed, paramsK), nil
+	return indcpaPackPrivateKey(skpv, paramsK), indcpaPackPublicKey(pkpv, publicSeed[:], paramsK), nil
 }
 
 // indcpaEncrypt is the encryption function of the CPA-secure

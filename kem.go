@@ -27,15 +27,13 @@ func KemKeypair512() ([Kyber512SKBytes]byte, [Kyber512PKBytes]byte, error) {
 		return privateKeyFixedLength, publicKeyFixedLength, err
 	}
 	pkh := sha3.Sum256(indcpaPublicKey)
-	rnd := make([]byte, paramsSymBytes)
-	_, err = rand.Read(rnd)
+	skStart := copy(privateKeyFixedLength[:], indcpaPrivateKey)
+	skStart += copy(privateKeyFixedLength[skStart:], indcpaPublicKey)
+	skStart += copy(privateKeyFixedLength[skStart:], pkh[:])
+	_, err = rand.Read(privateKeyFixedLength[skStart:])
 	if err != nil {
 		return privateKeyFixedLength, publicKeyFixedLength, err
 	}
-	privateKey := append(indcpaPrivateKey, indcpaPublicKey...)
-	privateKey = append(privateKey, pkh[:]...)
-	privateKey = append(privateKey, rnd...)
-	copy(privateKeyFixedLength[:], privateKey)
 	copy(publicKeyFixedLength[:], indcpaPublicKey)
 	return privateKeyFixedLength, publicKeyFixedLength, nil
 }
@@ -45,7 +43,7 @@ func KemKeypair512() ([Kyber512SKBytes]byte, [Kyber512PKBytes]byte, error) {
 // An accompanying error is returned if no sufficient
 // randomness could be obtained from the system.
 func KemKeypair768() ([Kyber768SKBytes]byte, [Kyber768PKBytes]byte, error) {
-	const paramsK int = 3
+	const paramsK = 3
 	var privateKeyFixedLength [Kyber768SKBytes]byte
 	var publicKeyFixedLength [Kyber768PKBytes]byte
 	indcpaPrivateKey, indcpaPublicKey, err := indcpaKeypair(paramsK)
@@ -53,15 +51,13 @@ func KemKeypair768() ([Kyber768SKBytes]byte, [Kyber768PKBytes]byte, error) {
 		return privateKeyFixedLength, publicKeyFixedLength, err
 	}
 	pkh := sha3.Sum256(indcpaPublicKey)
-	rnd := make([]byte, paramsSymBytes)
-	_, err = rand.Read(rnd)
+	skStart := copy(privateKeyFixedLength[:], indcpaPrivateKey)
+	skStart += copy(privateKeyFixedLength[skStart:], indcpaPublicKey)
+	skStart += copy(privateKeyFixedLength[skStart:], pkh[:])
+	_, err = rand.Read(privateKeyFixedLength[skStart:])
 	if err != nil {
 		return privateKeyFixedLength, publicKeyFixedLength, err
 	}
-	privateKey := append(indcpaPrivateKey, indcpaPublicKey...)
-	privateKey = append(privateKey, pkh[:]...)
-	privateKey = append(privateKey, rnd...)
-	copy(privateKeyFixedLength[:], privateKey)
 	copy(publicKeyFixedLength[:], indcpaPublicKey)
 	return privateKeyFixedLength, publicKeyFixedLength, nil
 }
@@ -71,7 +67,7 @@ func KemKeypair768() ([Kyber768SKBytes]byte, [Kyber768PKBytes]byte, error) {
 // An accompanying error is returned if no sufficient
 // randomness could be obtained from the system.
 func KemKeypair1024() ([Kyber1024SKBytes]byte, [Kyber1024PKBytes]byte, error) {
-	const paramsK int = 4
+	const paramsK = 4
 	var privateKeyFixedLength [Kyber1024SKBytes]byte
 	var publicKeyFixedLength [Kyber1024PKBytes]byte
 	indcpaPrivateKey, indcpaPublicKey, err := indcpaKeypair(paramsK)
@@ -79,15 +75,13 @@ func KemKeypair1024() ([Kyber1024SKBytes]byte, [Kyber1024PKBytes]byte, error) {
 		return privateKeyFixedLength, publicKeyFixedLength, err
 	}
 	pkh := sha3.Sum256(indcpaPublicKey)
-	rnd := make([]byte, paramsSymBytes)
-	_, err = rand.Read(rnd)
+	skStart := copy(privateKeyFixedLength[:], indcpaPrivateKey)
+	skStart += copy(privateKeyFixedLength[skStart:], indcpaPublicKey)
+	skStart += copy(privateKeyFixedLength[skStart:], pkh[:])
+	_, err = rand.Read(privateKeyFixedLength[skStart:])
 	if err != nil {
 		return privateKeyFixedLength, publicKeyFixedLength, err
 	}
-	privateKey := append(indcpaPrivateKey, indcpaPublicKey...)
-	privateKey = append(privateKey, pkh[:]...)
-	privateKey = append(privateKey, rnd...)
-	copy(privateKeyFixedLength[:], privateKey)
 	copy(publicKeyFixedLength[:], indcpaPublicKey)
 	return privateKeyFixedLength, publicKeyFixedLength, nil
 }
@@ -99,17 +93,21 @@ func KemKeypair1024() ([Kyber1024SKBytes]byte, [Kyber1024PKBytes]byte, error) {
 func KemEncrypt512(publicKey [Kyber512PKBytes]byte) (
 	[Kyber512CTBytes]byte, [KyberSSBytes]byte, error,
 ) {
-	const paramsK int = 2
+	const paramsK = 2
 	var ciphertextFixedLength [Kyber512CTBytes]byte
 	var sharedSecretFixedLength [KyberSSBytes]byte
-	m := make([]byte, paramsSymBytes)
-	_, err := rand.Read(m)
+	var d [paramsSymBytes]byte
+	_, err := rand.Read(d[:])
 	if err != nil {
 		return ciphertextFixedLength, sharedSecretFixedLength, err
 	}
+	m := sha3.Sum256(d[:])
 	pkh := sha3.Sum256(publicKey[:])
-	kr := sha3.Sum512(append(m, pkh[:]...))
-	ciphertext, err := indcpaEncrypt(m, publicKey[:], kr[paramsSymBytes:], paramsK)
+	var krInput [64]byte
+	copy(krInput[:32], m[:])
+	copy(krInput[32:], pkh[:])
+	kr := sha3.Sum512(krInput[:])
+	ciphertext, err := indcpaEncrypt(m[:], publicKey[:], kr[paramsSymBytes:], paramsK)
 	copy(ciphertextFixedLength[:], ciphertext)
 	copy(sharedSecretFixedLength[:], kr[:paramsSymBytes])
 	return ciphertextFixedLength, sharedSecretFixedLength, err
@@ -122,17 +120,21 @@ func KemEncrypt512(publicKey [Kyber512PKBytes]byte) (
 func KemEncrypt768(publicKey [Kyber768PKBytes]byte) (
 	[Kyber768CTBytes]byte, [KyberSSBytes]byte, error,
 ) {
-	const paramsK int = 3
+	const paramsK = 3
 	var ciphertextFixedLength [Kyber768CTBytes]byte
 	var sharedSecretFixedLength [KyberSSBytes]byte
-	m := make([]byte, paramsSymBytes)
-	_, err := rand.Read(m)
+	var d [paramsSymBytes]byte
+	_, err := rand.Read(d[:])
 	if err != nil {
 		return ciphertextFixedLength, sharedSecretFixedLength, err
 	}
+	m := sha3.Sum256(d[:])
 	pkh := sha3.Sum256(publicKey[:])
-	kr := sha3.Sum512(append(m, pkh[:]...))
-	ciphertext, err := indcpaEncrypt(m, publicKey[:], kr[paramsSymBytes:], paramsK)
+	var krInput [64]byte
+	copy(krInput[:32], m[:])
+	copy(krInput[32:], pkh[:])
+	kr := sha3.Sum512(krInput[:])
+	ciphertext, err := indcpaEncrypt(m[:], publicKey[:], kr[paramsSymBytes:], paramsK)
 	copy(ciphertextFixedLength[:], ciphertext)
 	copy(sharedSecretFixedLength[:], kr[:paramsSymBytes])
 	return ciphertextFixedLength, sharedSecretFixedLength, err
@@ -145,17 +147,21 @@ func KemEncrypt768(publicKey [Kyber768PKBytes]byte) (
 func KemEncrypt1024(publicKey [Kyber1024PKBytes]byte) (
 	[Kyber1024CTBytes]byte, [KyberSSBytes]byte, error,
 ) {
-	const paramsK int = 4
+	const paramsK = 4
 	var ciphertextFixedLength [Kyber1024CTBytes]byte
 	var sharedSecretFixedLength [KyberSSBytes]byte
-	m := make([]byte, paramsSymBytes)
-	_, err := rand.Read(m)
+	var d [paramsSymBytes]byte
+	_, err := rand.Read(d[:])
 	if err != nil {
 		return ciphertextFixedLength, sharedSecretFixedLength, err
 	}
+	m := sha3.Sum256(d[:])
 	pkh := sha3.Sum256(publicKey[:])
-	kr := sha3.Sum512(append(m, pkh[:]...))
-	ciphertext, err := indcpaEncrypt(m, publicKey[:], kr[paramsSymBytes:], paramsK)
+	var krInput [64]byte
+	copy(krInput[:32], m[:])
+	copy(krInput[32:], pkh[:])
+	kr := sha3.Sum512(krInput[:])
+	ciphertext, err := indcpaEncrypt(m[:], publicKey[:], kr[paramsSymBytes:], paramsK)
 	copy(ciphertextFixedLength[:], ciphertext)
 	copy(sharedSecretFixedLength[:], kr[:paramsSymBytes])
 	return ciphertextFixedLength, sharedSecretFixedLength, err
@@ -169,24 +175,27 @@ func KemDecrypt512(
 	ciphertext [Kyber512CTBytes]byte,
 	privateKey [Kyber512SKBytes]byte,
 ) ([KyberSSBytes]byte, error) {
-	const paramsK int = 2
+	const paramsK = 2
 	var sharedSecretFixedLength [KyberSSBytes]byte
 	indcpaPrivateKey := privateKey[:paramsIndcpaSecretKeyBytesK512]
 	pki := paramsIndcpaSecretKeyBytesK512 + paramsIndcpaPublicKeyBytesK512
 	publicKey := privateKey[paramsIndcpaSecretKeyBytesK512:pki]
-	hStart := pki
-	h := privateKey[hStart : hStart+paramsSymBytes]
+	h := privateKey[pki : pki+paramsSymBytes]
 	z := privateKey[Kyber512SKBytes-paramsSymBytes:]
 	mPrime := indcpaDecrypt(ciphertext[:], indcpaPrivateKey, paramsK)
-	kr := sha3.Sum512(append(mPrime, h...))
-	kPrime := kr[:paramsSymBytes]
-	rPrime := kr[paramsSymBytes:]
-	kBar := make([]byte, KyberSSBytes)
-	sha3.ShakeSum256(kBar, append(z, ciphertext[:]...))
-	cmp, err := indcpaEncrypt(mPrime, publicKey, rPrime, paramsK)
+	var krInput [64]byte
+	copy(krInput[:32], mPrime)
+	copy(krInput[32:], h)
+	kr := sha3.Sum512(krInput[:])
+	var kBar [KyberSSBytes]byte
+	var jInput [paramsSymBytes + Kyber512CTBytes]byte
+	copy(jInput[:paramsSymBytes], z)
+	copy(jInput[paramsSymBytes:], ciphertext[:])
+	sha3.ShakeSum256(kBar[:], jInput[:])
+	cmp, err := indcpaEncrypt(mPrime, publicKey, kr[paramsSymBytes:], paramsK)
 	fail := byte(subtle.ConstantTimeCompare(ciphertext[:], cmp) - 1)
 	for i := 0; i < KyberSSBytes; i++ {
-		sharedSecretFixedLength[i] = kPrime[i] ^ (fail & (kPrime[i] ^ kBar[i]))
+		sharedSecretFixedLength[i] = kr[i] ^ (fail & (kr[i] ^ kBar[i]))
 	}
 	return sharedSecretFixedLength, err
 }
@@ -199,24 +208,27 @@ func KemDecrypt768(
 	ciphertext [Kyber768CTBytes]byte,
 	privateKey [Kyber768SKBytes]byte,
 ) ([KyberSSBytes]byte, error) {
-	const paramsK int = 3
+	const paramsK = 3
 	var sharedSecretFixedLength [KyberSSBytes]byte
 	indcpaPrivateKey := privateKey[:paramsIndcpaSecretKeyBytesK768]
 	pki := paramsIndcpaSecretKeyBytesK768 + paramsIndcpaPublicKeyBytesK768
 	publicKey := privateKey[paramsIndcpaSecretKeyBytesK768:pki]
-	hStart := pki
-	h := privateKey[hStart : hStart+paramsSymBytes]
+	h := privateKey[pki : pki+paramsSymBytes]
 	z := privateKey[Kyber768SKBytes-paramsSymBytes:]
 	mPrime := indcpaDecrypt(ciphertext[:], indcpaPrivateKey, paramsK)
-	kr := sha3.Sum512(append(mPrime, h...))
-	kPrime := kr[:paramsSymBytes]
-	rPrime := kr[paramsSymBytes:]
-	kBar := make([]byte, KyberSSBytes)
-	sha3.ShakeSum256(kBar, append(z, ciphertext[:]...))
-	cmp, err := indcpaEncrypt(mPrime, publicKey, rPrime, paramsK)
+	var krInput [64]byte
+	copy(krInput[:32], mPrime)
+	copy(krInput[32:], h)
+	kr := sha3.Sum512(krInput[:])
+	var kBar [KyberSSBytes]byte
+	var jInput [paramsSymBytes + Kyber768CTBytes]byte
+	copy(jInput[:paramsSymBytes], z)
+	copy(jInput[paramsSymBytes:], ciphertext[:])
+	sha3.ShakeSum256(kBar[:], jInput[:])
+	cmp, err := indcpaEncrypt(mPrime, publicKey, kr[paramsSymBytes:], paramsK)
 	fail := byte(subtle.ConstantTimeCompare(ciphertext[:], cmp) - 1)
 	for i := 0; i < KyberSSBytes; i++ {
-		sharedSecretFixedLength[i] = kPrime[i] ^ (fail & (kPrime[i] ^ kBar[i]))
+		sharedSecretFixedLength[i] = kr[i] ^ (fail & (kr[i] ^ kBar[i]))
 	}
 	return sharedSecretFixedLength, err
 }
@@ -229,24 +241,27 @@ func KemDecrypt1024(
 	ciphertext [Kyber1024CTBytes]byte,
 	privateKey [Kyber1024SKBytes]byte,
 ) ([KyberSSBytes]byte, error) {
-	const paramsK int = 4
+	const paramsK = 4
 	var sharedSecretFixedLength [KyberSSBytes]byte
 	indcpaPrivateKey := privateKey[:paramsIndcpaSecretKeyBytesK1024]
 	pki := paramsIndcpaSecretKeyBytesK1024 + paramsIndcpaPublicKeyBytesK1024
 	publicKey := privateKey[paramsIndcpaSecretKeyBytesK1024:pki]
-	hStart := pki
-	h := privateKey[hStart : hStart+paramsSymBytes]
+	h := privateKey[pki : pki+paramsSymBytes]
 	z := privateKey[Kyber1024SKBytes-paramsSymBytes:]
 	mPrime := indcpaDecrypt(ciphertext[:], indcpaPrivateKey, paramsK)
-	kr := sha3.Sum512(append(mPrime, h...))
-	kPrime := kr[:paramsSymBytes]
-	rPrime := kr[paramsSymBytes:]
-	kBar := make([]byte, KyberSSBytes)
-	sha3.ShakeSum256(kBar, append(z, ciphertext[:]...))
-	cmp, err := indcpaEncrypt(mPrime, publicKey, rPrime, paramsK)
+	var krInput [64]byte
+	copy(krInput[:32], mPrime)
+	copy(krInput[32:], h)
+	kr := sha3.Sum512(krInput[:])
+	var kBar [KyberSSBytes]byte
+	var jInput [paramsSymBytes + Kyber1024CTBytes]byte
+	copy(jInput[:paramsSymBytes], z)
+	copy(jInput[paramsSymBytes:], ciphertext[:])
+	sha3.ShakeSum256(kBar[:], jInput[:])
+	cmp, err := indcpaEncrypt(mPrime, publicKey, kr[paramsSymBytes:], paramsK)
 	fail := byte(subtle.ConstantTimeCompare(ciphertext[:], cmp) - 1)
 	for i := 0; i < KyberSSBytes; i++ {
-		sharedSecretFixedLength[i] = kPrime[i] ^ (fail & (kPrime[i] ^ kBar[i]))
+		sharedSecretFixedLength[i] = kr[i] ^ (fail & (kr[i] ^ kBar[i]))
 	}
 	return sharedSecretFixedLength, err
 }
