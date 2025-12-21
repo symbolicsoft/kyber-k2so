@@ -19,7 +19,7 @@ Keeping in mind the Security Disclaimer above, Kyber-K2SO appears to be appropri
 
 ### Features
 
-* **Small, easy to read code.** Kyber-K2SO is to our knowledge the smallest implementation of ML-KEM (FIPS 203).
+* **Small, easy to read code.** Kyber-K2SO keeps it simple with the goal of improving maintainability and being a good pedagogical resource.
 * **Simple API.** `KemKeypair768()` to generate a private key and a public key, `KemEncrypt768(publicKey)` generate and encrypt a shared secret, and `KemDecrypt768(ciphertext, privateKey)` to decrypt the shared secret. Aside from ML-KEM-768, ML-KEM-512 and ML-KEM-1024 are also offered.
 * **Good performance.** Kyber-K2SO is more than fast enough for regular usage in any environment supported by the Go programming language.
 * **Constant time (probably).** As far as we can tell, decryption appears to perform in constant time. Further analysis is encouraged.
