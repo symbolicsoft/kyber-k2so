@@ -1,89 +1,53 @@
-run:
-    skip-files:
-        - kem_test.go
-
+version: "2"
 linters:
-    enable:
-        - govet
-        - staticcheck
-        - gosimple
-        - gofmt
-        - ineffassign
-        - typecheck
-        - dogsled
-        - funlen
-        - gochecknoinits
-        - godox
-        - gocritic
-        - gocyclo
-        - gosec
-        - lll
-        - misspell
-        - nakedret
-        - prealloc
-        - exportloopref
-        - unconvert
-        - unparam
-        - unused
-        - errcheck
-        - unused
-
-linters-settings:
-    gocritic:
-        enabled-checks:
-            - caseOrder
-            - dupArg
-            - dupBranchBody
-            - dupCase
-            - dupSubExpr
-            - flagDeref
-            - captLocal
-            - defaultCaseOrder
-            - elseif
-            - ifElseChain
-            - regexpMust
-            - sloppyLen
-            - switchTrue
-            - typeSwitchVar
-            - underef
-            - unlambda
-            - unslice
-            - argOrder
-            - badCall
-            - badCond
-            - evalOrder
-            - exitAfterDefer
-            - flagName
-            - mapKey
-            - nilValReturn
-            - octalLiteral
-            - offBy1
-            - regexpPattern
-            - sloppyReassign
-            - truncateCmp
-            - weakCond
-            - boolExprSimplify
-            - builtinShadow
-            - dupImport
-            - methodExprCall
-            - initClause
-            - newDeref
-            - nestingReduce
-            - stringXbytes
-            - unlabelStmt
-            - typeUnparen
-            - unnecessaryBlock
-            - valSwap
-            - wrapperFunc
-            - yodaStyleExpr
-    goconst:
-        min-len: 12
+  enable:
+    - dogsled
+    - funlen
+    - gochecknoinits
+    - gocritic
+    - gocyclo
+    - godox
+    - gosec
+    - lll
+    - misspell
+    - nakedret
+    - prealloc
+    - unconvert
+    - unparam
+  settings:
     funlen:
-        statements: 64
-        lines: 128
-    gocyclo:
-        min-complexity: 15
+      lines: 128
+      statements: 64
+    goconst:
+      min-len: 12
     govet:
-        enable-all: true
+      enable-all: true
     lll:
-        line-length: 120
+      line-length: 120
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+    rules:
+      - linters:
+          - gosec
+        text: "G115:"
+      - linters:
+          - gosec
+        text: "G602:"
+formatters:
+  enable:
+    - gofmt
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

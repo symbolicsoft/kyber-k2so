@@ -43,11 +43,11 @@ func ntt(r poly) poly {
 	for l := 128; l >= 2; l >>= 1 {
 		for start := 0; start < 256; start = j + l {
 			zeta := nttZetas[k]
-			k = k + 1
+			k++
 			for j = start; j < start+l; j++ {
 				t := nttFqMul(zeta, r[j+l])
 				r[j+l] = r[j] - t
-				r[j] = r[j] + t
+				r[j] += t
 			}
 		}
 	}
@@ -63,7 +63,7 @@ func nttInv(r poly) poly {
 	for l := 2; l <= 128; l <<= 1 {
 		for start := 0; start < 256; start = j + l {
 			zeta := nttZetasInv[k]
-			k = k + 1
+			k++
 			for j = start; j < start+l; j++ {
 				t := r[j]
 				r[j] = byteopsBarrettReduce(t + r[j+l])

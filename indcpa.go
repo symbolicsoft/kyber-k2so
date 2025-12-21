@@ -84,14 +84,14 @@ func indcpaRejUniform(buf []byte, bufl int, l int) (poly, int) {
 	for i < l && j+3 <= bufl {
 		d1 = (uint16((buf[j])>>0) | (uint16(buf[j+1]) << 8)) & 0xFFF
 		d2 = (uint16((buf[j+1])>>4) | (uint16(buf[j+2]) << 4)) & 0xFFF
-		j = j + 3
+		j += 3
 		if d1 < uint16(paramsQ) {
 			r[i] = int16(d1)
-			i = i + 1
+			i++
 		}
 		if i < l && d2 < uint16(paramsQ) {
 			r[i] = int16(d2)
-			i = i + 1
+			i++
 		}
 	}
 	return r, i

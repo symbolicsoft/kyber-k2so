@@ -209,7 +209,7 @@ func polyCSubQ(r poly) poly {
 // polyAdd adds two polynomials.
 func polyAdd(a poly, b poly) poly {
 	for i := 0; i < paramsN; i++ {
-		a[i] = a[i] + b[i]
+		a[i] += b[i]
 	}
 	return a
 }
@@ -217,7 +217,7 @@ func polyAdd(a poly, b poly) poly {
 // polySub subtracts two polynomials.
 func polySub(a poly, b poly) poly {
 	for i := 0; i < paramsN; i++ {
-		a[i] = a[i] - b[i]
+		a[i] -= b[i]
 	}
 	return a
 }

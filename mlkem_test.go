@@ -13,6 +13,8 @@ import (
 // These are the official FIPS 203 intermediate test vectors
 
 // ML-KEM-512 test vector
+//
+//nolint:gosec,lll // Test vectors are not credentials and must be long hex strings
 var mlkem512TestVector = struct {
 	dk string // decapsulation key (hex)
 	c  string // ciphertext (hex)
@@ -24,6 +26,8 @@ var mlkem512TestVector = struct {
 }
 
 // ML-KEM-768 test vector
+//
+//nolint:gosec,lll // Test vectors are not credentials and must be long hex strings
 var mlkem768TestVector = struct {
 	dk string
 	c  string
@@ -35,6 +39,8 @@ var mlkem768TestVector = struct {
 }
 
 // ML-KEM-1024 test vector
+//
+//nolint:gosec,lll // Test vectors are not credentials and must be long hex strings
 var mlkem1024TestVector = struct {
 	dk string
 	c  string

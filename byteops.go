@@ -7,9 +7,9 @@ package kyberk2so
 func byteopsLoad32(x []byte) uint32 {
 	var r uint32
 	r = uint32(x[0])
-	r = r | (uint32(x[1]) << 8)
-	r = r | (uint32(x[2]) << 16)
-	r = r | (uint32(x[3]) << 24)
+	r |= (uint32(x[1]) << 8)
+	r |= (uint32(x[2]) << 16)
+	r |= (uint32(x[3]) << 24)
 	return r
 }
 
@@ -17,8 +17,8 @@ func byteopsLoad32(x []byte) uint32 {
 func byteopsLoad24(x []byte) uint32 {
 	var r uint32
 	r = uint32(x[0])
-	r = r | (uint32(x[1]) << 8)
-	r = r | (uint32(x[2]) << 16)
+	r |= (uint32(x[1]) << 8)
+	r |= (uint32(x[2]) << 16)
 	return r
 }
 
@@ -34,8 +34,8 @@ func byteopsCbd(buf []byte, paramsK int) poly {
 		for i := 0; i < paramsN/4; i++ {
 			t = byteopsLoad24(buf[3*i:])
 			d = t & 0x00249249
-			d = d + ((t >> 1) & 0x00249249)
-			d = d + ((t >> 2) & 0x00249249)
+			d += ((t >> 1) & 0x00249249)
+			d += ((t >> 2) & 0x00249249)
 			for j := 0; j < 4; j++ {
 				a = int16((d >> (6*j + 0)) & 0x7)
 				b = int16((d >> (6*j + paramsETAK512)) & 0x7)
@@ -46,7 +46,7 @@ func byteopsCbd(buf []byte, paramsK int) poly {
 		for i := 0; i < paramsN/8; i++ {
 			t = byteopsLoad32(buf[4*i:])
 			d = t & 0x55555555
-			d = d + ((t >> 1) & 0x55555555)
+			d += ((t >> 1) & 0x55555555)
 			for j := 0; j < 8; j++ {
 				a = int16((d >> (4*j + 0)) & 0x3)
 				b = int16((d >> (4*j + paramsETAK768K1024)) & 0x3)
@@ -74,8 +74,8 @@ func byteopsBarrettReduce(a int16) int16 {
 
 // byteopsCSubQ conditionally subtracts Q from a.
 func byteopsCSubQ(a int16) int16 {
-	a = a - int16(paramsQ)
-	a = a + ((a >> 15) & int16(paramsQ))
+	a -= int16(paramsQ)
+	a += ((a >> 15) & int16(paramsQ))
 	return a
 }
 
