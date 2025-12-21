@@ -127,7 +127,9 @@ func indcpaGenMatrix(seed []byte, transposed bool, paramsK int) ([]polyvec, erro
 				return nil, err
 			}
 			r[i][j], ctr = indcpaRejUniform(buf[:504], 504, paramsN)
-			for ctr < paramsN {
+			// Retry with remaining buffer bytes if needed
+			// Bound iterations as a safety measure (probability of needing >1 iteration is ~10^-82)
+			for iterations := 0; ctr < paramsN && iterations < 100; iterations++ {
 				missing, ctrn := indcpaRejUniform(buf[504:], 168, paramsN-ctr)
 				for k := ctr; k < paramsN; k++ {
 					r[i][j][k] = missing[k-ctr]
