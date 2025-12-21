@@ -78,3 +78,10 @@ func byteopsCSubQ(a int16) int16 {
 	a = a + ((a >> 15) & int16(paramsQ))
 	return a
 }
+
+// byteopsZeroBytes zeroes a byte slice to clear sensitive data from memory.
+func byteopsZeroBytes(b []byte) {
+	for i := range b {
+		b[i] = 0
+	}
+}

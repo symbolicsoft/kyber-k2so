@@ -32,6 +32,9 @@ func KemKeypair512() ([Kyber512SKBytes]byte, [Kyber512PKBytes]byte, error) {
 	skStart += copy(privateKeyFixedLength[skStart:], pkh[:])
 	_, err = rand.Read(privateKeyFixedLength[skStart:])
 	if err != nil {
+		for i := range privateKeyFixedLength {
+			privateKeyFixedLength[i] = 0
+		}
 		return privateKeyFixedLength, publicKeyFixedLength, err
 	}
 	copy(publicKeyFixedLength[:], indcpaPublicKey)
@@ -56,6 +59,9 @@ func KemKeypair768() ([Kyber768SKBytes]byte, [Kyber768PKBytes]byte, error) {
 	skStart += copy(privateKeyFixedLength[skStart:], pkh[:])
 	_, err = rand.Read(privateKeyFixedLength[skStart:])
 	if err != nil {
+		for i := range privateKeyFixedLength {
+			privateKeyFixedLength[i] = 0
+		}
 		return privateKeyFixedLength, publicKeyFixedLength, err
 	}
 	copy(publicKeyFixedLength[:], indcpaPublicKey)
@@ -80,6 +86,9 @@ func KemKeypair1024() ([Kyber1024SKBytes]byte, [Kyber1024PKBytes]byte, error) {
 	skStart += copy(privateKeyFixedLength[skStart:], pkh[:])
 	_, err = rand.Read(privateKeyFixedLength[skStart:])
 	if err != nil {
+		for i := range privateKeyFixedLength {
+			privateKeyFixedLength[i] = 0
+		}
 		return privateKeyFixedLength, publicKeyFixedLength, err
 	}
 	copy(publicKeyFixedLength[:], indcpaPublicKey)
@@ -110,6 +119,10 @@ func KemEncrypt512(publicKey [Kyber512PKBytes]byte) (
 	ciphertext, err := indcpaEncrypt(m[:], publicKey[:], kr[paramsSymBytes:], paramsK)
 	copy(ciphertextFixedLength[:], ciphertext)
 	copy(sharedSecretFixedLength[:], kr[:paramsSymBytes])
+	byteopsZeroBytes(d[:])
+	byteopsZeroBytes(m[:])
+	byteopsZeroBytes(krInput[:])
+	byteopsZeroBytes(kr[:])
 	return ciphertextFixedLength, sharedSecretFixedLength, err
 }
 
@@ -137,6 +150,10 @@ func KemEncrypt768(publicKey [Kyber768PKBytes]byte) (
 	ciphertext, err := indcpaEncrypt(m[:], publicKey[:], kr[paramsSymBytes:], paramsK)
 	copy(ciphertextFixedLength[:], ciphertext)
 	copy(sharedSecretFixedLength[:], kr[:paramsSymBytes])
+	byteopsZeroBytes(d[:])
+	byteopsZeroBytes(m[:])
+	byteopsZeroBytes(krInput[:])
+	byteopsZeroBytes(kr[:])
 	return ciphertextFixedLength, sharedSecretFixedLength, err
 }
 
@@ -164,6 +181,10 @@ func KemEncrypt1024(publicKey [Kyber1024PKBytes]byte) (
 	ciphertext, err := indcpaEncrypt(m[:], publicKey[:], kr[paramsSymBytes:], paramsK)
 	copy(ciphertextFixedLength[:], ciphertext)
 	copy(sharedSecretFixedLength[:], kr[:paramsSymBytes])
+	byteopsZeroBytes(d[:])
+	byteopsZeroBytes(m[:])
+	byteopsZeroBytes(krInput[:])
+	byteopsZeroBytes(kr[:])
 	return ciphertextFixedLength, sharedSecretFixedLength, err
 }
 
@@ -197,6 +218,10 @@ func KemDecrypt512(
 	for i := 0; i < KyberSSBytes; i++ {
 		sharedSecretFixedLength[i] = kr[i] ^ (fail & (kr[i] ^ kBar[i]))
 	}
+	byteopsZeroBytes(mPrime)
+	byteopsZeroBytes(krInput[:])
+	byteopsZeroBytes(kr[:])
+	byteopsZeroBytes(kBar[:])
 	return sharedSecretFixedLength, err
 }
 
@@ -230,6 +255,10 @@ func KemDecrypt768(
 	for i := 0; i < KyberSSBytes; i++ {
 		sharedSecretFixedLength[i] = kr[i] ^ (fail & (kr[i] ^ kBar[i]))
 	}
+	byteopsZeroBytes(mPrime)
+	byteopsZeroBytes(krInput[:])
+	byteopsZeroBytes(kr[:])
+	byteopsZeroBytes(kBar[:])
 	return sharedSecretFixedLength, err
 }
 
@@ -263,5 +292,9 @@ func KemDecrypt1024(
 	for i := 0; i < KyberSSBytes; i++ {
 		sharedSecretFixedLength[i] = kr[i] ^ (fail & (kr[i] ^ kBar[i]))
 	}
+	byteopsZeroBytes(mPrime)
+	byteopsZeroBytes(krInput[:])
+	byteopsZeroBytes(kr[:])
+	byteopsZeroBytes(kBar[:])
 	return sharedSecretFixedLength, err
 }
