@@ -3,7 +3,7 @@
 
 package kyberk2so
 
-type poly [paramsPolyBytes]int16
+type poly [paramsN]int16
 type polyvec []poly
 
 // polyCompress lossily compresses and subsequently serializes a polynomial.
