@@ -7,7 +7,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/symbolicsoft/kyber-k2so)](https://goreportcard.com/report/github.com/symbolicsoft/kyber-k2so)
 ![GitHub](https://img.shields.io/github/license/symbolicsoft/kyber-k2so)
 
-**[Kyber-K2SO](https://github.com/symbolicsoft/kyber-k2so)** is Symbolic Software's clean implementation of the [Kyber](https://pq-crystals.org/kyber/) IND-CCA2-secure key encapsulation mechanism (KEM), whose security is based on the hardness of solving the learning-with-errors (LWE) problem over module lattices. Kyber is the winning candidate algorithm, of those submitted to the NIST post-quantum cryptography project.
+**[Kyber-K2SO](https://github.com/symbolicsoft/kyber-k2so)** is Symbolic Software's clean implementation of [ML-KEM](https://csrc.nist.gov/pubs/fips/203/final) (FIPS 203), the Module-Lattice-Based Key-Encapsulation Mechanism standardized by NIST. ML-KEM is an IND-CCA2-secure key encapsulation mechanism (KEM) whose security is based on the hardness of solving the learning-with-errors (LWE) problem over module lattices.
 
 ## Security Disclaimer
 
@@ -19,8 +19,8 @@ Keeping in mind the Security Disclaimer above, Kyber-K2SO appears to be appropri
 
 ### Features
 
-* **Small, easy to read code.** Kyber-K2SO is to our knowledge the smallest implementation of Kyber Version 3.
-* **Simple API.** `KemKeypair768()` to generate a private key and a public key, `KemEncrypt768(publicKey)` generate and encrypt a shared secret, and `KemDecrypt768(ciphertext, privateKey)` to decrypt the shared secret. Aside from Kyber-768, Kyber-512 and Kyber-1024 are also offered.
+* **Small, easy to read code.** Kyber-K2SO is to our knowledge the smallest implementation of ML-KEM (FIPS 203).
+* **Simple API.** `KemKeypair768()` to generate a private key and a public key, `KemEncrypt768(publicKey)` generate and encrypt a shared secret, and `KemDecrypt768(ciphertext, privateKey)` to decrypt the shared secret. Aside from ML-KEM-768, ML-KEM-512 and ML-KEM-1024 are also offered.
 * **Good performance.** Kyber-K2SO is more than fast enough for regular usage in any environment supported by the Go programming language.
 * **Constant time (probably).** As far as we can tell, decryption appears to perform in constant time. Further analysis is encouraged.
 
@@ -44,27 +44,27 @@ func main() {
 }
 ```
 
-Replace `768` with `512` or `1024` in the above function names in order to call Kyber-512 or Kyber-1024 instead of Kyber-768.
+Replace `768` with `512` or `1024` in the above function names in order to call ML-KEM-512 or ML-KEM-1024 instead of ML-KEM-768.
 
 ### Running Tests
 
 ```bash
 > go test -v
 
-=== RUN   TestVectors512
---- PASS: TestVectors512 (0.01s)
-=== RUN   TestVectors768
---- PASS: TestVectors768 (0.01s)
-=== RUN   TestVectors1024
---- PASS: TestVectors1024 (0.01s)
 === RUN   TestSelf512
---- PASS: TestSelf512 (0.19s)
+--- PASS: TestSelf512 (0.09s)
 === RUN   TestSelf768
---- PASS: TestSelf768 (0.30s)
+--- PASS: TestSelf768 (0.14s)
 === RUN   TestSelf1024
---- PASS: TestSelf1024 (0.46s)
+--- PASS: TestSelf1024 (0.21s)
+=== RUN   TestMLKEM512Vector
+--- PASS: TestMLKEM512Vector (0.00s)
+=== RUN   TestMLKEM768Vector
+--- PASS: TestMLKEM768Vector (0.00s)
+=== RUN   TestMLKEM1024Vector
+--- PASS: TestMLKEM1024Vector (0.00s)
 PASS
-ok  	github.com/symbolicsoft/kyber-k2so	1.140s
+ok      github.com/symbolicsoft/kyber-k2so      0.431s
 ```
 
 ### Running Benchmarks
@@ -75,23 +75,20 @@ ok  	github.com/symbolicsoft/kyber-k2so	1.140s
 goos: linux
 goarch: amd64
 pkg: github.com/symbolicsoft/kyber-k2so
-BenchmarkKemKeypair512-8    	   28116	     41519 ns/op
-BenchmarkKemKeypair768-8    	   15864	     74150 ns/op
-BenchmarkKemKeypair1024-8   	   10000	    105946 ns/op
-BenchmarkKemEncrypt512-8    	   21409	     56336 ns/op
-BenchmarkKemEncrypt768-8    	   13629	     87541 ns/op
-BenchmarkKemEncrypt1024-8   	    9987	    131054 ns/op
-BenchmarkKemDecrypt512-8    	   17650	     65348 ns/op
-BenchmarkKemDecrypt768-8    	   12352	     99300 ns/op
-BenchmarkKemDecrypt1024-8   	    8913	    140804 ns/op
+cpu: Intel(R) Core(TM) Ultra 9 275HX
+BenchmarkKemKeypair512-24          52944             22653 ns/op
+BenchmarkKemKeypair768-24          29696             40083 ns/op
+BenchmarkKemKeypair1024-24         19209             60778 ns/op
+BenchmarkKemEncrypt512-24          48856             23307 ns/op
+BenchmarkKemEncrypt768-24          32428             39273 ns/op
+BenchmarkKemEncrypt1024-24         19483             57528 ns/op
+BenchmarkKemDecrypt512-24          36138             33402 ns/op
+BenchmarkKemDecrypt768-24          25008             47869 ns/op
+BenchmarkKemDecrypt1024-24         17690             67303 ns/op
 PASS
-ok  	github.com/symbolicsoft/kyber-k2so	16.180s
+ok      github.com/symbolicsoft/kyber-k2so      15.135s
 ```
 
 ## About Kyber-K2SO
 
 Kyber-K2SO is published by [Symbolic Software](https://symbolic.software) under the MIT License.
-
-Kyber-K2SO originally implemented Kyber version 2. Kyber-K2SO was subsequently updated in version 0.1.0 to implement Kyber version 3 thanks to work contributed by [Anton Tutoveanu](https://github.com/antontutoveanu) in March 2021.
-
-We thank [Peter Schwabe](https://cryptojedi.org/peter) for his feedback during the development of this implementation.

@@ -1,4 +1,4 @@
-/* SPDX-FileCopyrightText: © 2020-2024 Nadim Kobeissi <nadim@symbolic.software>
+/* SPDX-FileCopyrightText: © 2020-2026 Nadim Kobeissi <nadim@symbolic.software>
  * SPDX-License-Identifier: MIT */
 
 package kyberk2so
@@ -156,7 +156,7 @@ func indcpaKeypair(paramsK int) ([]byte, []byte, error) {
 	if err != nil {
 		return []byte{}, []byte{}, err
 	}
-	_, err = h.Write(buf[:paramsSymBytes])
+	_, err = h.Write(append(buf[:paramsSymBytes], byte(paramsK)))
 	if err != nil {
 		return []byte{}, []byte{}, err
 	}
