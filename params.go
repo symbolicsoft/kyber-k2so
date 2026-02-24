@@ -3,6 +3,7 @@
 
 package kyberk2so
 
+const paramsMaxK int = 4
 const paramsN int = 256
 const paramsQ int = 3329
 const paramsQDivBy2Ceil uint32 = 1665

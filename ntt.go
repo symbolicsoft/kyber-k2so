@@ -37,7 +37,8 @@ func nttFqMul(a int16, b int16) int16 {
 
 // ntt performs an inplace number-theoretic transform (NTT) in `Rq`.
 // The input is in standard order, the output is in bit-reversed order.
-func ntt(r poly) poly {
+func ntt(p *poly) poly {
+	r := *p
 	j := 0
 	k := 1
 	for l := 128; l >= 2; l >>= 1 {
@@ -57,7 +58,8 @@ func ntt(r poly) poly {
 // nttInv performs an inplace inverse number-theoretic transform (NTT)
 // in `Rq` and multiplication by Montgomery factor 2^16.
 // The input is in bit-reversed order, the output is in standard order.
-func nttInv(r poly) poly {
+func nttInv(p *poly) poly {
+	r := *p
 	j := 0
 	k := 0
 	for l := 2; l <= 128; l <<= 1 {

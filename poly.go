@@ -3,42 +3,39 @@
 
 package kyberk2so
 
+import "golang.org/x/crypto/sha3"
+
 type poly [paramsN]int16
-type polyvec []poly
+type polyvec [4]poly
 
 // polyCompress lossily compresses and subsequently serializes a polynomial.
-func polyCompress(a poly, paramsK int) []byte {
+func polyCompress(dst []byte, a *poly, paramsK int) {
 	var t [8]byte
-	a = polyCSubQ(a)
 	rr := 0
 	switch paramsK {
 	case 2, 3:
-		r := make([]byte, paramsPolyCompressedBytesK768)
 		for i := 0; i < paramsN/8; i++ {
 			for j := 0; j < 8; j++ {
 				t[j] = byte((((uint32(a[8*i+j]) << 4) + paramsQDivBy2Ceil) * params2Pow28DivByQ) >> 28)
 			}
-			r[rr] = t[0] | (t[1] << 4)
-			r[rr+1] = t[2] | (t[3] << 4)
-			r[rr+2] = t[4] | (t[5] << 4)
-			r[rr+3] = t[6] | (t[7] << 4)
+			dst[rr] = t[0] | (t[1] << 4)
+			dst[rr+1] = t[2] | (t[3] << 4)
+			dst[rr+2] = t[4] | (t[5] << 4)
+			dst[rr+3] = t[6] | (t[7] << 4)
 			rr += 4
 		}
-		return r
 	default:
-		r := make([]byte, paramsPolyCompressedBytesK1024)
 		for i := 0; i < paramsN/8; i++ {
 			for j := 0; j < 8; j++ {
 				t[j] = byte((((uint32(a[8*i+j]) << 5) + (paramsQDivBy2Ceil - 1)) * params2Pow27DivByQ) >> 27)
 			}
-			r[rr] = t[0] | (t[1] << 5)
-			r[rr+1] = (t[1] >> 3) | (t[2] << 2) | (t[3] << 7)
-			r[rr+2] = (t[3] >> 1) | (t[4] << 4)
-			r[rr+3] = (t[4] >> 4) | (t[5] << 1) | (t[6] << 6)
-			r[rr+4] = (t[6] >> 2) | (t[7] << 3)
+			dst[rr] = t[0] | (t[1] << 5)
+			dst[rr+1] = (t[1] >> 3) | (t[2] << 2) | (t[3] << 7)
+			dst[rr+2] = (t[3] >> 1) | (t[4] << 4)
+			dst[rr+3] = (t[4] >> 4) | (t[5] << 1) | (t[6] << 6)
+			dst[rr+4] = (t[6] >> 2) | (t[7] << 3)
 			rr += 5
 		}
-		return r
 	}
 }
 
@@ -77,29 +74,48 @@ func polyDecompress(a []byte, paramsK int) poly {
 }
 
 // polyToBytes serializes a polynomial into an array of bytes.
-func polyToBytes(a poly) []byte {
+func polyToBytes(dst []byte, a *poly) {
 	var t0, t1 uint16
-	r := make([]byte, paramsPolyBytes)
-	a = polyCSubQ(a)
 	for i := 0; i < paramsN/2; i++ {
 		t0 = uint16(a[2*i])
 		t1 = uint16(a[2*i+1])
-		r[3*i+0] = byte(t0 >> 0)
-		r[3*i+1] = byte(t0>>8) | byte(t1<<4)
-		r[3*i+2] = byte(t1 >> 4)
+		dst[3*i+0] = byte(t0 >> 0)
+		dst[3*i+1] = byte(t0>>8) | byte(t1<<4)
+		dst[3*i+2] = byte(t1 >> 4)
 	}
-	return r
 }
 
 // polyFromBytes de-serialises an array of bytes into a polynomial,
 // and represents the inverse of polyToBytes.
+// Per FIPS 203 Algorithm 6 (ByteDecode₁₂), coefficients are reduced mod Q.
 func polyFromBytes(a []byte) poly {
 	var r poly
 	for i := 0; i < paramsN/2; i++ {
 		r[2*i] = int16(((uint16(a[3*i+0]) >> 0) | (uint16(a[3*i+1]) << 8)) & 0xFFF)
 		r[2*i+1] = int16(((uint16(a[3*i+1]) >> 4) | (uint16(a[3*i+2]) << 4)) & 0xFFF)
+		r[2*i] %= int16(paramsQ)
+		r[2*i+1] %= int16(paramsQ)
 	}
 	return r
+}
+
+// polyvecBytesValid checks that a serialized polynomial vector encodes
+// coefficients in [0, q-1] per FIPS 203 §7.2 (encapsulation key modulus check).
+// It performs ByteEncode₁₂(ByteDecode₁₂(a)) and checks equality with a.
+func polyvecBytesValid(a []byte, paramsK int) bool {
+	var roundTrip [paramsMaxK * paramsPolyBytes]byte
+	for i := 0; i < paramsK; i++ {
+		start := i * paramsPolyBytes
+		end := start + paramsPolyBytes
+		p := polyFromBytes(a[start:end])
+		polyToBytes(roundTrip[start:end], &p)
+	}
+	for i := 0; i < paramsK*paramsPolyBytes; i++ {
+		if a[i] != roundTrip[i] {
+			return false
+		}
+	}
+	return true
 }
 
 // polyFromMsg converts a 32-byte message to a polynomial.
@@ -117,168 +133,165 @@ func polyFromMsg(msg []byte) poly {
 
 // polyToMsg converts a polynomial to a 32-byte message
 // and represents the inverse of polyFromMsg.
-func polyToMsg(a poly) []byte {
-	msg := make([]byte, paramsSymBytes)
+func polyToMsg(dst []byte, a *poly) {
 	var t uint32
-	a = polyCSubQ(a)
 	for i := 0; i < paramsN/8; i++ {
-		msg[i] = 0
+		dst[i] = 0
 		for j := 0; j < 8; j++ {
 			t = (uint32(a[8*i+j]) << 1) + paramsQDivBy2Ceil
 			t = ((t * params2Pow28DivByQ) >> 28) & 1
-			msg[i] |= byte(t << j)
+			dst[i] |= byte(t << j)
 		}
 	}
-	return msg
 }
 
 // polyGetNoise samples a polynomial deterministically from a seed
 // and nonce, with the output polynomial being close to a centered
 // binomial distribution.
-func polyGetNoise(seed []byte, nonce byte, paramsK int) poly {
+func polyGetNoise(prf sha3.ShakeHash, seed []byte, nonce byte, paramsK int) poly {
+	var buf [192]byte
 	switch paramsK {
 	case 2:
 		l := paramsETAK512 * paramsN / 4
-		p := indcpaPrf(l, seed, nonce)
-		return byteopsCbd(p, paramsK)
+		indcpaPrf(buf[:l], prf, seed, nonce)
+		return byteopsCbd(buf[:l], paramsK)
 	default:
 		l := paramsETAK768K1024 * paramsN / 4
-		p := indcpaPrf(l, seed, nonce)
-		return byteopsCbd(p, paramsK)
+		indcpaPrf(buf[:l], prf, seed, nonce)
+		return byteopsCbd(buf[:l], paramsK)
 	}
 }
 
 // polyNtt computes a negacyclic number-theoretic transform (NTT) of
 // a polynomial in-place; the input is assumed to be in normal order,
 // while the output is in bit-reversed order.
-func polyNtt(r poly) poly {
-	return ntt(r)
+func polyNtt(p *poly) poly {
+	return ntt(p)
 }
 
 // polyInvNttToMont computes the inverse of a negacyclic number-theoretic
 // transform (NTT) of a polynomial in-place; the input is assumed to be in
 // bit-reversed order, while the output is in normal order.
-func polyInvNttToMont(r poly) poly {
-	return nttInv(r)
+func polyInvNttToMont(p *poly) poly {
+	return nttInv(p)
 }
 
 // polyBaseMulMontgomery performs the multiplication of two polynomials
 // in the number-theoretic transform (NTT) domain.
-func polyBaseMulMontgomery(a poly, b poly) poly {
+func polyBaseMulMontgomery(a, b *poly) poly {
+	var r poly
 	for i := 0; i < paramsN/4; i++ {
-		a[4*i+0], a[4*i+1] = nttBaseMul(
+		r[4*i+0], r[4*i+1] = nttBaseMul(
 			a[4*i+0], a[4*i+1],
 			b[4*i+0], b[4*i+1],
 			nttZetas[64+i],
 		)
-		a[4*i+2], a[4*i+3] = nttBaseMul(
+		r[4*i+2], r[4*i+3] = nttBaseMul(
 			a[4*i+2], a[4*i+3],
 			b[4*i+2], b[4*i+3],
 			-nttZetas[64+i],
 		)
 	}
-	return a
+	return r
 }
 
 // polyToMont performs the in-place conversion of all coefficients
 // of a polynomial from the normal domain to the Montgomery domain.
-func polyToMont(r poly) poly {
+func polyToMont(p *poly) poly {
+	var r poly
 	for i := 0; i < paramsN; i++ {
-		r[i] = byteopsMontgomeryReduce(int32(r[i]) * int32(paramsMontFactor))
+		r[i] = byteopsMontgomeryReduce(int32(p[i]) * int32(paramsMontFactor))
 	}
 	return r
 }
 
 // polyReduce applies Barrett reduction to all coefficients of a polynomial.
-func polyReduce(r poly) poly {
+func polyReduce(p *poly) poly {
+	var r poly
 	for i := 0; i < paramsN; i++ {
-		r[i] = byteopsBarrettReduce(r[i])
+		r[i] = byteopsBarrettReduce(p[i])
 	}
 	return r
 }
 
 // polyCSubQ applies the conditional subtraction of `Q` to each coefficient
 // of a polynomial.
-func polyCSubQ(r poly) poly {
+func polyCSubQ(p *poly) poly {
+	var r poly
 	for i := 0; i < paramsN; i++ {
-		r[i] = byteopsCSubQ(r[i])
+		r[i] = byteopsCSubQ(p[i])
+	}
+	return r
+}
+
+// polyReduceFull applies Barrett reduction followed by conditional subtraction
+// of Q to each coefficient in a single pass.
+func polyReduceFull(p *poly) poly {
+	var r poly
+	for i := 0; i < paramsN; i++ {
+		r[i] = byteopsCSubQ(byteopsBarrettReduce(p[i]))
 	}
 	return r
 }
 
 // polyAdd adds two polynomials.
-func polyAdd(a poly, b poly) poly {
+func polyAdd(a, b *poly) poly {
+	var r poly
 	for i := 0; i < paramsN; i++ {
-		a[i] += b[i]
+		r[i] = a[i] + b[i]
 	}
-	return a
+	return r
 }
 
 // polySub subtracts two polynomials.
-func polySub(a poly, b poly) poly {
+func polySub(a, b *poly) poly {
+	var r poly
 	for i := 0; i < paramsN; i++ {
-		a[i] -= b[i]
+		r[i] = a[i] - b[i]
 	}
-	return a
-}
-
-// polyvecNew instantiates a new vector of polynomials.
-func polyvecNew(paramsK int) polyvec {
-	var pv polyvec = make([]poly, paramsK)
-	return pv
+	return r
 }
 
 // polyvecCompress lossily compresses and serializes a vector of polynomials.
-func polyvecCompress(a polyvec, paramsK int) []byte {
-	polyvecCSubQ(a, paramsK)
+func polyvecCompress(dst []byte, a *polyvec, paramsK int) {
 	rr := 0
 	switch paramsK {
 	case 2, 3:
-		var rSize int
-		if paramsK == 2 {
-			rSize = paramsPolyvecCompressedBytesK512
-		} else {
-			rSize = paramsPolyvecCompressedBytesK768
-		}
-		r := make([]byte, rSize)
 		var t [4]uint16
 		for i := 0; i < paramsK; i++ {
 			for j := 0; j < paramsN/4; j++ {
 				for k := 0; k < 4; k++ {
 					t[k] = uint16(((((uint64(a[i][4*j+k]) << 10) + uint64(paramsQDivBy2Ceil)) * params2Pow32DivByQ) >> 32) & 0x3ff)
 				}
-				r[rr] = byte(t[0])
-				r[rr+1] = byte((t[0] >> 8) | (t[1] << 2))
-				r[rr+2] = byte((t[1] >> 6) | (t[2] << 4))
-				r[rr+3] = byte((t[2] >> 4) | (t[3] << 6))
-				r[rr+4] = byte(t[3] >> 2)
+				dst[rr] = byte(t[0])
+				dst[rr+1] = byte((t[0] >> 8) | (t[1] << 2))
+				dst[rr+2] = byte((t[1] >> 6) | (t[2] << 4))
+				dst[rr+3] = byte((t[2] >> 4) | (t[3] << 6))
+				dst[rr+4] = byte(t[3] >> 2)
 				rr += 5
 			}
 		}
-		return r
 	default:
-		r := make([]byte, paramsPolyvecCompressedBytesK1024)
 		var t [8]uint16
 		for i := 0; i < paramsK; i++ {
 			for j := 0; j < paramsN/8; j++ {
 				for k := 0; k < 8; k++ {
 					t[k] = uint16(((((uint64(a[i][8*j+k]) << 11) + uint64(paramsQDivBy2Ceil-1)) * params2Pow31DivByQ) >> 31) & 0x7ff)
 				}
-				r[rr] = byte(t[0])
-				r[rr+1] = byte((t[0] >> 8) | (t[1] << 3))
-				r[rr+2] = byte((t[1] >> 5) | (t[2] << 6))
-				r[rr+3] = byte(t[2] >> 2)
-				r[rr+4] = byte((t[2] >> 10) | (t[3] << 1))
-				r[rr+5] = byte((t[3] >> 7) | (t[4] << 4))
-				r[rr+6] = byte((t[4] >> 4) | (t[5] << 7))
-				r[rr+7] = byte(t[5] >> 1)
-				r[rr+8] = byte((t[5] >> 9) | (t[6] << 2))
-				r[rr+9] = byte((t[6] >> 6) | (t[7] << 5))
-				r[rr+10] = byte(t[7] >> 3)
+				dst[rr] = byte(t[0])
+				dst[rr+1] = byte((t[0] >> 8) | (t[1] << 3))
+				dst[rr+2] = byte((t[1] >> 5) | (t[2] << 6))
+				dst[rr+3] = byte(t[2] >> 2)
+				dst[rr+4] = byte((t[2] >> 10) | (t[3] << 1))
+				dst[rr+5] = byte((t[3] >> 7) | (t[4] << 4))
+				dst[rr+6] = byte((t[4] >> 4) | (t[5] << 7))
+				dst[rr+7] = byte(t[5] >> 1)
+				dst[rr+8] = byte((t[5] >> 9) | (t[6] << 2))
+				dst[rr+9] = byte((t[6] >> 6) | (t[7] << 5))
+				dst[rr+10] = byte(t[7] >> 3)
 				rr += 11
 			}
 		}
-		return r
 	}
 }
 
@@ -286,7 +299,7 @@ func polyvecCompress(a polyvec, paramsK int) []byte {
 // represents the approximate inverse of polyvecCompress. Since compression is lossy,
 // the results of decompression will may not match the original vector of polynomials.
 func polyvecDecompress(a []byte, paramsK int) polyvec {
-	r := polyvecNew(paramsK)
+	var r polyvec
 	aa := 0
 	switch paramsK {
 	case 2, 3:
@@ -326,19 +339,17 @@ func polyvecDecompress(a []byte, paramsK int) polyvec {
 }
 
 // polyvecToBytes serializes a vector of polynomials.
-func polyvecToBytes(a polyvec, paramsK int) []byte {
-	r := make([]byte, paramsK*paramsPolyBytes)
+func polyvecToBytes(dst []byte, a *polyvec, paramsK int) {
 	for i := 0; i < paramsK; i++ {
-		copy(r[i*paramsPolyBytes:], polyToBytes(a[i]))
+		polyToBytes(dst[i*paramsPolyBytes:], &a[i])
 	}
-	return r
 }
 
 // polyvecFromBytes deserializes a vector of polynomials.
 func polyvecFromBytes(a []byte, paramsK int) polyvec {
-	r := polyvecNew(paramsK)
+	var r polyvec
 	for i := 0; i < paramsK; i++ {
-		start := (i * paramsPolyBytes)
+		start := i * paramsPolyBytes
 		end := (i + 1) * paramsPolyBytes
 		r[i] = polyFromBytes(a[start:end])
 	}
@@ -347,51 +358,71 @@ func polyvecFromBytes(a []byte, paramsK int) polyvec {
 
 // polyvecNtt applies forward number-theoretic transforms (NTT)
 // to all elements of a vector of polynomials.
-func polyvecNtt(r polyvec, paramsK int) {
+func polyvecNtt(pv *polyvec, paramsK int) polyvec {
+	var r polyvec
 	for i := 0; i < paramsK; i++ {
-		r[i] = polyNtt(r[i])
+		r[i] = polyNtt(&pv[i])
 	}
+	return r
 }
 
 // polyvecInvNttToMont applies the inverse number-theoretic transform (NTT)
 // to all elements of a vector of polynomials and multiplies by Montgomery
 // factor `2^16`.
-func polyvecInvNttToMont(r polyvec, paramsK int) {
+func polyvecInvNttToMont(pv *polyvec, paramsK int) polyvec {
+	var r polyvec
 	for i := 0; i < paramsK; i++ {
-		r[i] = polyInvNttToMont(r[i])
+		r[i] = polyInvNttToMont(&pv[i])
 	}
+	return r
 }
 
 // polyvecPointWiseAccMontgomery pointwise-multiplies elements of polynomial-vectors
 // `a` and `b`, accumulates the results into `r`, and then multiplies by `2^-16`.
-func polyvecPointWiseAccMontgomery(a polyvec, b polyvec, paramsK int) poly {
-	r := polyBaseMulMontgomery(a[0], b[0])
+func polyvecPointWiseAccMontgomery(a, b *polyvec, paramsK int) poly {
+	r := polyBaseMulMontgomery(&a[0], &b[0])
 	for i := 1; i < paramsK; i++ {
-		t := polyBaseMulMontgomery(a[i], b[i])
-		r = polyAdd(r, t)
+		t := polyBaseMulMontgomery(&a[i], &b[i])
+		r = polyAdd(&r, &t)
 	}
-	return polyReduce(r)
+	return polyReduce(&r)
 }
 
 // polyvecReduce applies Barrett reduction to each coefficient of each element
 // of a vector of polynomials.
-func polyvecReduce(r polyvec, paramsK int) {
+func polyvecReduce(pv *polyvec, paramsK int) polyvec {
+	var r polyvec
 	for i := 0; i < paramsK; i++ {
-		r[i] = polyReduce(r[i])
+		r[i] = polyReduce(&pv[i])
 	}
+	return r
+}
+
+// polyvecReduceFull applies Barrett reduction followed by conditional subtraction
+// of Q to each coefficient of each element of a vector of polynomials.
+func polyvecReduceFull(pv *polyvec, paramsK int) polyvec {
+	var r polyvec
+	for i := 0; i < paramsK; i++ {
+		r[i] = polyReduceFull(&pv[i])
+	}
+	return r
 }
 
 // polyvecCSubQ applies the conditional subtraction of `Q` to each coefficient
 // of each element of a vector of polynomials.
-func polyvecCSubQ(r polyvec, paramsK int) {
+func polyvecCSubQ(pv *polyvec, paramsK int) polyvec {
+	var r polyvec
 	for i := 0; i < paramsK; i++ {
-		r[i] = polyCSubQ(r[i])
+		r[i] = polyCSubQ(&pv[i])
 	}
+	return r
 }
 
 // polyvecAdd adds two vectors of polynomials.
-func polyvecAdd(a polyvec, b polyvec, paramsK int) {
+func polyvecAdd(a, b *polyvec, paramsK int) polyvec {
+	var r polyvec
 	for i := 0; i < paramsK; i++ {
-		a[i] = polyAdd(a[i], b[i])
+		r[i] = polyAdd(&a[i], &b[i])
 	}
+	return r
 }

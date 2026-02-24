@@ -3,6 +3,8 @@
 
 package kyberk2so
 
+import "runtime"
+
 // byteopsLoad32 returns a 32-bit unsigned integer loaded from byte x.
 func byteopsLoad32(x []byte) uint32 {
 	var r uint32
@@ -80,8 +82,25 @@ func byteopsCSubQ(a int16) int16 {
 }
 
 // byteopsZeroBytes zeroes a byte slice to clear sensitive data from memory.
+// runtime.KeepAlive prevents the compiler from optimizing away the zeroing.
 func byteopsZeroBytes(b []byte) {
 	for i := range b {
 		b[i] = 0
+	}
+	runtime.KeepAlive(b)
+}
+
+// byteopsZeroPoly zeroes a polynomial to clear sensitive data from memory.
+func byteopsZeroPoly(p *poly) {
+	for i := range p {
+		p[i] = 0
+	}
+	runtime.KeepAlive(p)
+}
+
+// byteopsZeroPolyvec zeroes a vector of polynomials to clear sensitive data from memory.
+func byteopsZeroPolyvec(pv *polyvec) {
+	for i := range pv {
+		byteopsZeroPoly(&pv[i])
 	}
 }
