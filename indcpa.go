@@ -153,7 +153,7 @@ func indcpaPrf(dst []byte, prf sha3.ShakeHash, key []byte, nonce byte) {
 	prf.Reset()
 	_, _ = prf.Write(prfInput[:])
        	_, _ = prf.Read(dst)
-byteopsZeroBytes(prfInput[:]) // <--- The only change needed
+        byteopsZeroBytes(prfInput[:]) 
 }
 
 // indcpaKeypair generates public and private keys for the CPA-secure
