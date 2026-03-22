@@ -156,6 +156,59 @@ func indcpaPrf(dst []byte, prf sha3.ShakeHash, key []byte, nonce byte) {
 	byteopsZeroBytes(prfInput[:])
 }
 
+// indcpaKeypairDerand generates public and private keys for the CPA-secure
+// public-key encryption scheme underlying Kyber, using the provided
+// 32-byte seed d as the source of randomness (FIPS 203 Algorithm 13).
+func indcpaKeypairDerand(sk, pk []byte, d *[paramsSymBytes]byte, paramsK int) error {
+	var skpv, pkpv, e polyvec
+	var buf [64]byte
+	var hashInput [33]byte
+	h := sha3.New512()
+	copy(hashInput[:paramsSymBytes], d[:])
+	hashInput[32] = byte(paramsK)
+	_, err := h.Write(hashInput[:])
+	if err != nil {
+		return err
+	}
+	h.Sum(buf[:0])
+	var publicSeed [paramsSymBytes]byte
+	var noiseSeed [paramsSymBytes]byte
+	copy(publicSeed[:], buf[:paramsSymBytes])
+	copy(noiseSeed[:], buf[paramsSymBytes:])
+	a, err := indcpaGenMatrix(publicSeed[:], false, paramsK)
+	if err != nil {
+		return err
+	}
+	prf := sha3.NewShake256()
+	var nonce byte
+	for i := 0; i < paramsK; i++ {
+		skpv[i] = polyGetNoise(prf, noiseSeed[:], nonce, paramsK)
+		nonce++
+	}
+	for i := 0; i < paramsK; i++ {
+		e[i] = polyGetNoise(prf, noiseSeed[:], nonce, paramsK)
+		nonce++
+	}
+	skpv = polyvecNtt(&skpv, paramsK)
+	skpv = polyvecReduce(&skpv, paramsK)
+	e = polyvecNtt(&e, paramsK)
+	for i := 0; i < paramsK; i++ {
+		t := polyvecPointWiseAccMontgomery(&a[i], &skpv, paramsK)
+		pkpv[i] = polyToMont(&t)
+	}
+	pkpv = polyvecAdd(&pkpv, &e, paramsK)
+	pkpv = polyvecReduceFull(&pkpv, paramsK)
+	skpv = polyvecReduceFull(&skpv, paramsK)
+	indcpaPackPrivateKey(sk, &skpv, paramsK)
+	indcpaPackPublicKey(pk, &pkpv, publicSeed[:], paramsK)
+	byteopsZeroBytes(buf[:])
+	byteopsZeroBytes(hashInput[:])
+	byteopsZeroBytes(noiseSeed[:])
+	byteopsZeroPolyvec(&skpv)
+	byteopsZeroPolyvec(&e)
+	return nil
+}
+
 // indcpaKeypair generates public and private keys for the CPA-secure
 // public-key encryption scheme underlying Kyber.
 func indcpaKeypair(sk, pk []byte, paramsK int) error {

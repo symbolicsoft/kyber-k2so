@@ -25,6 +25,144 @@ var (
 	ErrInvalidDecapsulationKey = errors.New("kyberk2so: invalid decapsulation key")
 )
 
+// KemKeypairDerand512 generates an ML-KEM-512 key pair deterministically
+// from a 64-byte seed (d || z) per FIPS 203 Algorithm 16.
+func KemKeypairDerand512(coins [64]byte) ([Kyber512SKBytes]byte, [Kyber512PKBytes]byte, error) {
+	const paramsK = 2
+	var privateKeyFixedLength [Kyber512SKBytes]byte
+	var publicKeyFixedLength [Kyber512PKBytes]byte
+	err := indcpaKeypairDerand(
+		privateKeyFixedLength[:paramsIndcpaSecretKeyBytesK512],
+		publicKeyFixedLength[:],
+		(*[paramsSymBytes]byte)(coins[:32]),
+		paramsK,
+	)
+	if err != nil {
+		return privateKeyFixedLength, publicKeyFixedLength, err
+	}
+	pkh := sha3.Sum256(publicKeyFixedLength[:])
+	skStart := paramsIndcpaSecretKeyBytesK512
+	skStart += copy(privateKeyFixedLength[skStart:], publicKeyFixedLength[:])
+	skStart += copy(privateKeyFixedLength[skStart:], pkh[:])
+	copy(privateKeyFixedLength[skStart:], coins[32:])
+	return privateKeyFixedLength, publicKeyFixedLength, nil
+}
+
+// KemKeypairDerand768 generates an ML-KEM-768 key pair deterministically
+// from a 64-byte seed (d || z) per FIPS 203 Algorithm 16.
+func KemKeypairDerand768(coins [64]byte) ([Kyber768SKBytes]byte, [Kyber768PKBytes]byte, error) {
+	const paramsK = 3
+	var privateKeyFixedLength [Kyber768SKBytes]byte
+	var publicKeyFixedLength [Kyber768PKBytes]byte
+	err := indcpaKeypairDerand(
+		privateKeyFixedLength[:paramsIndcpaSecretKeyBytesK768],
+		publicKeyFixedLength[:],
+		(*[paramsSymBytes]byte)(coins[:32]),
+		paramsK,
+	)
+	if err != nil {
+		return privateKeyFixedLength, publicKeyFixedLength, err
+	}
+	pkh := sha3.Sum256(publicKeyFixedLength[:])
+	skStart := paramsIndcpaSecretKeyBytesK768
+	skStart += copy(privateKeyFixedLength[skStart:], publicKeyFixedLength[:])
+	skStart += copy(privateKeyFixedLength[skStart:], pkh[:])
+	copy(privateKeyFixedLength[skStart:], coins[32:])
+	return privateKeyFixedLength, publicKeyFixedLength, nil
+}
+
+// KemKeypairDerand1024 generates an ML-KEM-1024 key pair deterministically
+// from a 64-byte seed (d || z) per FIPS 203 Algorithm 16.
+func KemKeypairDerand1024(coins [64]byte) ([Kyber1024SKBytes]byte, [Kyber1024PKBytes]byte, error) {
+	const paramsK = 4
+	var privateKeyFixedLength [Kyber1024SKBytes]byte
+	var publicKeyFixedLength [Kyber1024PKBytes]byte
+	err := indcpaKeypairDerand(
+		privateKeyFixedLength[:paramsIndcpaSecretKeyBytesK1024],
+		publicKeyFixedLength[:],
+		(*[paramsSymBytes]byte)(coins[:32]),
+		paramsK,
+	)
+	if err != nil {
+		return privateKeyFixedLength, publicKeyFixedLength, err
+	}
+	pkh := sha3.Sum256(publicKeyFixedLength[:])
+	skStart := paramsIndcpaSecretKeyBytesK1024
+	skStart += copy(privateKeyFixedLength[skStart:], publicKeyFixedLength[:])
+	skStart += copy(privateKeyFixedLength[skStart:], pkh[:])
+	copy(privateKeyFixedLength[skStart:], coins[32:])
+	return privateKeyFixedLength, publicKeyFixedLength, nil
+}
+
+// KemEncryptDerand512 performs ML-KEM-512 encapsulation deterministically
+// using the provided 32-byte message m per FIPS 203 Algorithm 17.
+func KemEncryptDerand512(publicKey [Kyber512PKBytes]byte, m [32]byte) (
+	[Kyber512CTBytes]byte, [KyberSSBytes]byte, error,
+) {
+	const paramsK = 2
+	var ciphertextFixedLength [Kyber512CTBytes]byte
+	var sharedSecretFixedLength [KyberSSBytes]byte
+	if !polyvecBytesValid(publicKey[:paramsK*paramsPolyBytes], paramsK) {
+		return ciphertextFixedLength, sharedSecretFixedLength, ErrInvalidEncapsulationKey
+	}
+	pkh := sha3.Sum256(publicKey[:])
+	var krInput [64]byte
+	copy(krInput[:32], m[:])
+	copy(krInput[32:], pkh[:])
+	kr := sha3.Sum512(krInput[:])
+	err := indcpaEncrypt(ciphertextFixedLength[:], m[:], publicKey[:], kr[paramsSymBytes:], paramsK)
+	copy(sharedSecretFixedLength[:], kr[:paramsSymBytes])
+	byteopsZeroBytes(krInput[:])
+	byteopsZeroBytes(kr[:])
+	return ciphertextFixedLength, sharedSecretFixedLength, err
+}
+
+// KemEncryptDerand768 performs ML-KEM-768 encapsulation deterministically
+// using the provided 32-byte message m per FIPS 203 Algorithm 17.
+func KemEncryptDerand768(publicKey [Kyber768PKBytes]byte, m [32]byte) (
+	[Kyber768CTBytes]byte, [KyberSSBytes]byte, error,
+) {
+	const paramsK = 3
+	var ciphertextFixedLength [Kyber768CTBytes]byte
+	var sharedSecretFixedLength [KyberSSBytes]byte
+	if !polyvecBytesValid(publicKey[:paramsK*paramsPolyBytes], paramsK) {
+		return ciphertextFixedLength, sharedSecretFixedLength, ErrInvalidEncapsulationKey
+	}
+	pkh := sha3.Sum256(publicKey[:])
+	var krInput [64]byte
+	copy(krInput[:32], m[:])
+	copy(krInput[32:], pkh[:])
+	kr := sha3.Sum512(krInput[:])
+	err := indcpaEncrypt(ciphertextFixedLength[:], m[:], publicKey[:], kr[paramsSymBytes:], paramsK)
+	copy(sharedSecretFixedLength[:], kr[:paramsSymBytes])
+	byteopsZeroBytes(krInput[:])
+	byteopsZeroBytes(kr[:])
+	return ciphertextFixedLength, sharedSecretFixedLength, err
+}
+
+// KemEncryptDerand1024 performs ML-KEM-1024 encapsulation deterministically
+// using the provided 32-byte message m per FIPS 203 Algorithm 17.
+func KemEncryptDerand1024(publicKey [Kyber1024PKBytes]byte, m [32]byte) (
+	[Kyber1024CTBytes]byte, [KyberSSBytes]byte, error,
+) {
+	const paramsK = 4
+	var ciphertextFixedLength [Kyber1024CTBytes]byte
+	var sharedSecretFixedLength [KyberSSBytes]byte
+	if !polyvecBytesValid(publicKey[:paramsK*paramsPolyBytes], paramsK) {
+		return ciphertextFixedLength, sharedSecretFixedLength, ErrInvalidEncapsulationKey
+	}
+	pkh := sha3.Sum256(publicKey[:])
+	var krInput [64]byte
+	copy(krInput[:32], m[:])
+	copy(krInput[32:], pkh[:])
+	kr := sha3.Sum512(krInput[:])
+	err := indcpaEncrypt(ciphertextFixedLength[:], m[:], publicKey[:], kr[paramsSymBytes:], paramsK)
+	copy(sharedSecretFixedLength[:], kr[:paramsSymBytes])
+	byteopsZeroBytes(krInput[:])
+	byteopsZeroBytes(kr[:])
+	return ciphertextFixedLength, sharedSecretFixedLength, err
+}
+
 // KemKeypair512 returns an ML-KEM-512 private key
 // and a corresponding ML-KEM-512 public key.
 // An accompanying error is returned if no sufficient

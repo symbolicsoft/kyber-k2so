@@ -3,7 +3,11 @@
 
 package kyberk2so
 
-import "golang.org/x/crypto/sha3"
+import (
+	"crypto/subtle"
+
+	"golang.org/x/crypto/sha3"
+)
 
 type poly [paramsN]int16
 type polyvec [4]poly
@@ -110,12 +114,10 @@ func polyvecBytesValid(a []byte, paramsK int) bool {
 		p := polyFromBytes(a[start:end])
 		polyToBytes(roundTrip[start:end], &p)
 	}
-	for i := 0; i < paramsK*paramsPolyBytes; i++ {
-		if a[i] != roundTrip[i] {
-			return false
-		}
-	}
-	return true
+	return subtle.ConstantTimeCompare(
+		a[:paramsK*paramsPolyBytes],
+		roundTrip[:paramsK*paramsPolyBytes],
+	) == 1
 }
 
 // polyFromMsg converts a 32-byte message to a polynomial.
